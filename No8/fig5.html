@@ -1,0 +1,132 @@
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<canvas id="g_cv5" width="760" height="790" style="max-width:100%;display:block;margin:0 auto;"></canvas>
+<p style="text-align:center;font-size:0.85em;color:#555;margin-top:6px;">図5：GBM・XGBoost と LightGBM の木の形と積み重ね方の違い</p>
+<script>
+(function(){
+  var cv=document.getElementById('g_cv5'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  function g_rr(x,y,w,h,r,fi,st,lw){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();if(fi){ctx.fillStyle=fi;ctx.fill();}if(st){ctx.strokeStyle=st;ctx.lineWidth=lw||1.5;ctx.stroke();}}
+  function g_tx(s,x,y,sz,col,al,bold){ctx.font=(bold?'bold ':'')+sz+'px "Helvetica Neue",Arial,sans-serif';ctx.fillStyle=col||'#333';ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.fillText(s,x,y);}
+  function g_ln(x1,y1,x2,y2,col,lw,dash){ctx.strokeStyle=col||'#aaa';ctx.lineWidth=lw||1;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+  function g_nd(cx,cy,r,fi,st,label,lc,sz){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);if(fi){ctx.fillStyle=fi;ctx.fill();}if(st){ctx.strokeStyle=st;ctx.lineWidth=1.5;ctx.stroke();}if(label)g_tx(label,cx,cy,sz||9,lc||'#fff','center',true);}
+  function g_lf(cx,cy,w,h,fi,st,label,lc,sz){g_rr(cx-w/2,cy-h/2,w,h,4,fi,st,1.5);if(label)g_tx(label,cx,cy,sz||9,lc||'#333','center',true);}
+  function g_dn(x,y1,y2,col){col=col||'#aaa';ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2-9);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y2);ctx.lineTo(x-6,y2-10);ctx.lineTo(x+6,y2-10);ctx.closePath();ctx.fill();}
+
+  ctx.clearRect(0,0,W,H);
+  g_rr(2,2,W-4,H-4,10,'#FAFAFA','#E0E0E0');
+  g_tx('GBM・XGBoost と LightGBM の木の形と積み重ね方の違い',W/2,20,13,'#333','center',true);
+
+  var SEC_H=300;
+  var secDefs=[
+    {SY:38,label:'① GBM・XGBoost ── 深さ優先成長（Level-wise）',
+     sub:'各層を均等に展開するため、左右バランスのとれた木になる',
+     bd:'#1565C0',bg:'#E3F2FD',hd:'#1565C0',nc:'#1565C0',lc:'#BBDEFB',
+     note:['浅い木（深さ3〜6）を','数百〜数千本 直列に積み重ねる'],drawFn:'level'},
+    {SY:38+SEC_H+16,label:'② LightGBM ── 葉優先成長（Leaf-wise）',
+     sub:'残差（損失）が最大の葉だけを優先的に伸ばすため、非対称な形になる',
+     bd:'#2E7D32',bg:'#E8F5E9',hd:'#2E7D32',nc:'#2E7D32',lc:'#A5D6A7',
+     note:['浅めの木を','数百〜数千本 直列に積み重ねる','（GOSS・EFBで高速化）'],drawFn:'leaf'}
+  ];
+
+  secDefs.forEach(function(s){
+    g_rr(10,s.SY,W-20,SEC_H,8,'#fff',s.bd,1.5);
+    g_rr(10,s.SY,W-20,44,8,s.hd,s.hd);
+    g_tx(s.label,W/2,s.SY+14,12,'#fff','center',true);
+    g_tx(s.sub,W/2,s.SY+31,10,'rgba(255,255,255,0.82)');
+
+    var TZX=22,TZW=438,TT=s.SY+68;
+    if(s.drawFn==='level') g_drawLevel(TZX,TT,s.nc,s.lc,s.bd);
+    else g_drawLeaf(TZX,TT,s.nc,s.lc,s.bd);
+
+    g_ln(TZX+TZW+6,s.SY+48,TZX+TZW+6,s.SY+SEC_H-8,'#ddd',1,[4,3]);
+
+    var RX=TZX+TZW+20,RW=W-RX-22,RCX=RX+RW/2;
+    g_tx('積み重ね方',RCX,s.SY+60,11,s.bd,'center',true);
+    var mbH=30,mbG=16,mbW=Math.min(RW-8,120);
+    for(var mi=0;mi<4;mi++){
+      var my=s.SY+78+mi*(mbH+mbG);
+      g_rr(RCX-mbW/2,my,mbW,mbH,5,mi===0?s.nc:s.lc,s.bd,1.5);
+      g_tx(mi===0?'木 1（初期予測）':'木 '+(mi+1)+'（残差修正）',RCX,my+mbH/2,10,mi===0?'#fff':s.bd,'center',mi===0);
+      if(mi<3){g_dn(RCX,my+mbH+1,my+mbH+mbG-1,s.bd);if(mi===0)g_tx('残差を渡す→',RCX+mbW/2+4,my+mbH+mbG/2,9,'#E65100','left');}
+    }
+    var dotY=s.SY+78+4*(mbH+mbG)-6;
+    [-8,0,8].forEach(function(dx){ctx.beginPath();ctx.arc(RCX+dx,dotY,3,0,Math.PI*2);ctx.fillStyle=s.bd;ctx.fill();});
+    var noteY=s.SY+SEC_H-50;
+    g_rr(RX,noteY,RW,42,5,s.bg,s.bd,1);
+    s.note.forEach(function(line,i){g_tx(line,RCX,noteY+10+i*14,10,s.bd);});
+  });
+
+  /* まとめ */
+  var SUM_Y=secDefs[1].SY+SEC_H+12;
+  g_rr(10,SUM_Y,W-20,26,6,'#FFF9C4','#F9A825',1.5);
+  g_tx('【共通点】どちらも浅い決定木を直列に積み重ねる。1本ずつは粗い予測でも、大量に重ねることで複雑なパターンを捉える。',W/2,SUM_Y+13,10.5,'#555');
+  g_rr(10,SUM_Y+30,W-20,26,6,'#FFF9C4','#F9A825',1.5);
+  g_tx('【違い】Level-wise は均整のとれた木、Leaf-wise は残差大の側に偏って伸びる非対称な木——同じ葉数でも精度が高くなりやすい。',W/2,SUM_Y+43,10.5,'#555');
+
+  /* ── 木描画関数 ── */
+  function g_drawLevel(ox,oy,nc,lc,bd){
+    g_tx('各木は左右均等に展開される',ox+210,oy+6,10,'#1565C0','center',true);
+    g_oneLevel(ox+68,oy+24,nc,lc,bd,false);
+    g_oneLevel(ox+218,oy+24,nc,lc,bd,false);
+    g_oneLevel(ox+368,oy+24,nc,lc,bd,true);
+    g_tx('XGBoostは正則化により',ox+368,oy+192,9,'#888','center');
+    g_tx('不要な枝を剪定することも',ox+368,oy+205,9,'#888','center');
+  }
+  function g_oneLevel(cx,oy,nc,lc,bd,pruned){
+    var NR=11,LW=30,LH=18;
+    g_ln(cx,oy+NR,cx-46,oy+52,bd,1.2);g_ln(cx,oy+NR,cx+46,oy+52,bd,1.2);
+    g_ln(cx-46,oy+52+NR,cx-68,oy+104,bd,1.2);g_ln(cx-46,oy+52+NR,cx-24,oy+104,bd,1.2);
+    if(!pruned){g_ln(cx+46,oy+52+NR,cx+24,oy+104,bd,1.2);g_ln(cx+46,oy+52+NR,cx+68,oy+104,bd,1.2);}
+    else{g_ln(cx+46,oy+52+NR,cx+24,oy+104,bd,1.2);g_ln(cx+46,oy+52+NR,cx+68,oy+104,'#DDD',1);}
+    g_nd(cx,oy,NR,nc,bd,'x₁≦5','#fff',9);g_nd(cx-46,oy+52,NR,nc,bd,'x₂≦3','#fff',9);g_nd(cx+46,oy+52,NR,nc,bd,'x₁≦8','#fff',9);
+    g_lf(cx-68,oy+104,LW,LH,lc,bd,'+0.5','#1565C0',8);g_lf(cx-24,oy+104,LW,LH,lc,bd,'-0.2','#1565C0',8);g_lf(cx+24,oy+104,LW,LH,lc,bd,'+0.3','#1565C0',8);
+    if(!pruned){g_lf(cx+68,oy+104,LW,LH,lc,bd,'-0.4','#1565C0',8);}
+    else{g_rr(cx+68-LW/2,oy+104-LH/2,LW,LH,4,'#F5F5F5','#BDBDBD',1);ctx.setLineDash([3,3]);ctx.strokeStyle='#BDBDBD';ctx.lineWidth=1;ctx.strokeRect(cx+68-LW/2,oy+104-LH/2,LW,LH);ctx.setLineDash([]);g_tx('✂',cx+68,oy+96,11,'#EF9A9A');g_tx('剪定',cx+68,oy+104,8,'#BDBDBD');}
+    if(!pruned&&cx<200){g_ln(cx-68,oy+104+LH/2+2,cx+68,oy+104+LH/2+2,'#90CAF9',1,[3,3]);g_tx('← 同じ深さで均等に展開 →',cx,oy+130,9,'#1565C0');}
+  }
+  function g_drawLeaf(ox,oy,nc,lc,bd){
+    g_tx('残差が大きい葉を優先的に伸ばす → 非対称な形になる',ox+210,oy+6,10,'#2E7D32','center',true);
+    g_leafRight(ox+72,oy+24,nc,lc,bd);
+    g_leafLeft(ox+220,oy+24,nc,lc,bd);
+    g_leafMid(ox+368,oy+24,nc,lc,bd);
+  }
+  function g_leafRight(cx,oy,nc,lc,bd){
+    var NR=11,LW=28,LH=17;
+    g_ln(cx,oy+NR,cx-38,oy+52,bd,1.2);g_ln(cx,oy+NR,cx+38,oy+52,bd,1.2);
+    g_nd(cx,oy,NR,nc,bd,'x₁≦5','#fff',9);
+    g_lf(cx-38,oy+52,LW,LH,'#E8F5E9','#81C784','-0.1','#2E7D32',8);
+    g_tx('残差小',cx-38,oy+52+LH/2+12,8,'#81C784');
+    g_tx('★残差大',cx+60,oy+34,9,'#C62828','left');
+    g_nd(cx+38,oy+52,NR,nc,bd,'x₂≦8','#fff',9);
+    g_ln(cx+38,oy+52+NR,cx+18,oy+104,bd,1.2);g_ln(cx+38,oy+52+NR,cx+58,oy+104,bd,1.2);
+    g_lf(cx+18,oy+104,LW,LH,lc,bd,'+0.5','#2E7D32',8);
+    g_nd(cx+58,oy+104,NR,nc,bd,'x₃≦2','#fff',9);
+    g_ln(cx+58,oy+104+NR,cx+44,oy+152,bd,1.2);g_ln(cx+58,oy+104+NR,cx+72,oy+152,bd,1.2);
+    g_lf(cx+44,oy+152,LW,LH,lc,bd,'+0.8','#2E7D32',8);g_lf(cx+72,oy+152,LW,LH,lc,bd,'+0.3','#2E7D32',8);
+  }
+  function g_leafLeft(cx,oy,nc,lc,bd){
+    var NR=11,LW=28,LH=17;
+    g_ln(cx,oy+NR,cx-38,oy+52,bd,1.2);g_ln(cx,oy+NR,cx+38,oy+52,bd,1.2);
+    g_nd(cx,oy,NR,nc,bd,'x₂≦3','#fff',9);
+    g_lf(cx+38,oy+52,LW,LH,'#E8F5E9','#81C784','+0.1','#2E7D32',8);
+    g_tx('残差小',cx+38,oy+52+LH/2+12,8,'#81C784');
+    g_tx('★残差大',cx-80,oy+34,9,'#C62828','left');
+    g_nd(cx-38,oy+52,NR,nc,bd,'x₁≦6','#fff',9);
+    g_ln(cx-38,oy+52+NR,cx-58,oy+104,bd,1.2);g_ln(cx-38,oy+52+NR,cx-18,oy+104,bd,1.2);
+    g_lf(cx-18,oy+104,LW,LH,lc,bd,'-0.3','#2E7D32',8);
+    g_nd(cx-58,oy+104,NR,nc,bd,'x₃≦5','#fff',9);
+    g_ln(cx-58,oy+104+NR,cx-72,oy+152,bd,1.2);g_ln(cx-58,oy+104+NR,cx-44,oy+152,bd,1.2);
+    g_lf(cx-72,oy+152,LW,LH,lc,bd,'-0.7','#2E7D32',8);g_lf(cx-44,oy+152,LW,LH,lc,bd,'-0.2','#2E7D32',8);
+  }
+  function g_leafMid(cx,oy,nc,lc,bd){
+    var NR=11,LW=28,LH=17;
+    g_ln(cx,oy+NR,cx-36,oy+52,bd,1.2);g_ln(cx,oy+NR,cx+36,oy+52,bd,1.2);
+    g_nd(cx,oy,NR,nc,bd,'x₁≦4','#fff',9);
+    g_lf(cx-36,oy+52,LW,LH,'#E8F5E9','#81C784','+0.1','#2E7D32',8);
+    g_tx('残差小',cx-36,oy+52+LH/2+12,8,'#81C784');
+    g_tx('★残差大',cx+58,oy+34,9,'#C62828','left');
+    g_nd(cx+36,oy+52,NR,nc,bd,'x₂≦7','#fff',9);
+    g_ln(cx+36,oy+52+NR,cx+16,oy+104,bd,1.2);g_ln(cx+36,oy+52+NR,cx+56,oy+104,bd,1.2);
+    g_lf(cx+16,oy+104,LW,LH,lc,bd,'+0.6','#2E7D32',8);g_lf(cx+56,oy+104,LW,LH,lc,bd,'+0.9','#2E7D32',8);
+  }
+})();
+</script>
