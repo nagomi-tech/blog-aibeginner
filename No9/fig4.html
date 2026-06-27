@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図4：順伝播の数値の流れ</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  canvas { display: block; margin: 0 auto; }
+  #ctrl { text-align:center; margin-top:8px; }
+  button {
+    padding: 5px 18px; font-size: 12px; border-radius: 6px; border: 1px solid #3b82f6;
+    background: #eff6ff; color: #1d4ed8; cursor: pointer; margin: 0 4px;
+  }
+  button:hover { background: #dbeafe; }
+</style>
+</head>
+<body>
+<canvas id="canvas9f4"></canvas>
+<div id="ctrl">
+  <button id="btn9f4">▶ 信号を流す</button>
+  <button id="rst9f4">↺ リセット</button>
+</div>
+<p style="text-align:center;font-size:0.85em;color:#555;margin-top:6px;">図4：順伝播の数値の流れ（クリックで信号を流す）</p>
+<script>
+(()=>{
+  const canvas = document.getElementById('canvas9f4');
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.min(window.innerWidth, 720);
+  const H = 340;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // ネットワーク定義：3→3→2
+  const layerDef = [
+    { n:3, label:'入力層', color:'#dbeafe', stroke:'#3b82f6', tc:'#1d4ed8' },
+    { n:3, label:'隠れ層', color:'#d1fae5', stroke:'#10b981', tc:'#065f46' },
+    { n:2, label:'出力層', color:'#fce7f3', stroke:'#ec4899', tc:'#9d174d' },
+  ];
+  const inputs  = [1, 0, 3];   // x₁=1（割引あり）, x₂=0（知人でない）, x₃=3（リンク3本）
+  // 重み（手動設定・直感的な値）
+  const W01 = [[0.8,-0.5,0.3],[0.2,0.7,0.4],[0.5,0.1,-0.2]]; // 入力→隠れ
+  const W12 = [[0.9,0.4,-0.3],[0.2,-0.6,0.8]];                // 隠れ→出力
+  const B1  = [0.1,-0.2,0.05];
+  const B2  = [-0.1,0.2];
+
+  function relu(x){ return Math.max(0,x); }
+  function softmax(arr){
+    const m=Math.max(...arr);
+    const exps=arr.map(v=>Math.exp(v-m));
+    const s=exps.reduce((a,b)=>a+b,0);
+    return exps.map(v=>v/s);
+  }
+
+  // 計算
+  const h1 = W01.map((row,i)=> relu(row.reduce((s,w,j)=>s+w*inputs[j],0)+B1[i]));
+  const out_raw = W12.map((row,i)=> row.reduce((s,w,j)=>s+w*h1[j],0)+B2[i]);
+  const out = softmax(out_raw);
+
+  const allVals = [inputs, h1, out];
+
+  const R = 22;
+  const layerXs = [0.15,0.5,0.85].map(f=>f*W);
+  const centerY = H*0.52;
+
+  function neuronY(li,ni){
+    const n=layerDef[li].n;
+    const sp=Math.min(80,(H*0.65)/n);
+    return centerY-(n-1)*sp/2+ni*sp;
+  }
+
+  let step = 0; // 0=初期, 1=入力表示, 2=隠れ層計算済み, 3=出力計算済み
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // 接続線
+    for(let l=0;l<2;l++){
+      for(let i=0;i<layerDef[l].n;i++){
+        for(let j=0;j<layerDef[l+1].n;j++){
+          const active = step >= l+2;
+          ctx.strokeStyle=active?'rgba(59,130,246,0.35)':'rgba(209,213,219,0.5)';
+          ctx.lineWidth=active?1.5:0.8;
+          ctx.beginPath();
+          ctx.moveTo(layerXs[l]+R,neuronY(l,i));
+          ctx.lineTo(layerXs[l+1]-R,neuronY(l+1,j));
+          ctx.stroke();
+        }
+      }
+    }
+
+    // ニューロン
+    layerDef.forEach((ld,li)=>{
+      for(let i=0;i<ld.n;i++){
+        const x=layerXs[li], y=neuronY(li,i);
+        const active = step >= li+1;
+        ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
+        ctx.fillStyle=active?ld.color:'#f9fafb'; ctx.fill();
+        ctx.strokeStyle=active?ld.stroke:'#d1d5db'; ctx.lineWidth=2; ctx.stroke();
+        // 数値表示
+        if(active && step >= li+1){
+          const v=allVals[li][i];
+          ctx.fillStyle=ld.tc; ctx.font='bold 11px Arial';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(v.toFixed(2), x, y);
+        }
+      }
+    });
+
+    // 層ラベル
+    layerDef.forEach((ld,li)=>{
+      ctx.fillStyle=ld.tc; ctx.font='bold 12px Helvetica Neue,Arial';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(ld.label, layerXs[li], 20);
+    });
+
+    // 入力ラベル
+    ['x₁=1','x₂=0','x₃=3'].forEach((l,i)=>{
+      ctx.fillStyle='#374151'; ctx.font='11px Arial';
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillText(l, layerXs[0]-R-6, neuronY(0,i));
+    });
+
+    // 出力ラベル
+    if(step>=3){
+      ['スパム','正常'].forEach((l,i)=>{
+        const y=neuronY(2,i);
+        ctx.fillStyle='#9d174d'; ctx.font='10px Arial';
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText(l+': '+(out[i]*100).toFixed(1)+'%', layerXs[2]+R+6, y);
+      });
+    }
+
+    // ステップ説明
+    const msgs=['クリックして信号を流してください','入力データ（特徴量）を読み込みました','隠れ層：重みで計算→ReLUで変換','出力層：ソフトマックスで確率に変換'];
+    ctx.fillStyle='#374151'; ctx.font='11px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillRect(W*0.1, H-38, W*0.8, 28);
+    ctx.fillStyle='#f9fafb';
+    ctx.fillRect(W*0.1, H-38, W*0.8, 28);
+    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
+    ctx.strokeRect(W*0.1, H-38, W*0.8, 28);
+    ctx.fillStyle='#1d4ed8'; ctx.font='11px Arial';
+    ctx.fillText(msgs[step], W*0.5, H-24);
+
+    // 矢印
+    for(let l=0;l<2;l++){
+      const active=step>=l+2;
+      const ax=layerXs[l]+R+6, bx=layerXs[l+1]-R-6, ay=(H-44)/2+30;
+      if(active){
+        ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx-6,ay); ctx.stroke();
+        ctx.fillStyle='#f59e0b';
+        ctx.beginPath(); ctx.moveTo(bx,ay); ctx.lineTo(bx-8,ay-4); ctx.lineTo(bx-8,ay+4); ctx.closePath(); ctx.fill();
+      }
+    }
+  }
+
+  document.getElementById('btn9f4').addEventListener('click',()=>{
+    if(step<3){ step++; draw(); }
+  });
+  document.getElementById('rst9f4').addEventListener('click',()=>{
+    step=0; draw();
+  });
+
+  draw();
+})();
+</script>
+</body>
+</html>

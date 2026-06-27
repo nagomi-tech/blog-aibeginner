@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図1：生物のニューロンと人工ニューロン</title>
+<style>
+  body {
+    margin: 0;
+    padding: 12px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+  }
+  .main-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .fig-col {
+    flex: 0 0 42%;
+  }
+  .fig-col img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    display: block;
+  }
+  .source {
+    font-size: 0.75em;
+    color: #888;
+    margin: 5px 0 0;
+    line-height: 1.5;
+  }
+  .source a { color: #6b7280; }
+  .desc-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .annotation-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 13px;
+  }
+  .annotation-box h4 {
+    margin: 0 0 7px;
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 4px;
+  }
+  .bio h4 { border-color: #3b82f6; color: #1d4ed8; }
+  .art h4 { border-color: #10b981; color: #065f46; }
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 10px;
+    align-items: baseline;
+  }
+  dt {
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+    color: #374151;
+  }
+  dd {
+    margin: 0;
+    color: #555;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .note {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  @media (max-width: 540px) {
+    .main-layout { flex-direction: column; }
+    .fig-col { flex: none; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="main-layout">
+
+  <!-- 左：図 -->
+  <div class="fig-col">
+    <img src="https://www.ncbi.nlm.nih.gov/books/NBK597507/bin/515045_1_En_1_Fig2_HTML.jpg"
+         alt="(a)生物ニューロンと(b)人工ニューロン（パーセプトロン）の比較図">
+    <p class="source">
+      出典：Colliot O. "A Non-technical Introduction to Machine Learning."
+      In: <em>Machine Learning for Brain Disorders</em>. Humana, 2023.
+      <a href="https://www.ncbi.nlm.nih.gov/books/NBK597507/figure/ch1.Fig2/" target="_blank">Fig. 2</a>
+      ／ © The Author(s) 2023 ／ 変更なし<br>
+      ライセンス：<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>
+    </p>
+  </div>
+
+  <!-- 右：説明 -->
+  <div class="desc-col">
+
+    <div class="annotation-box bio">
+      <h4>(a) 生物のニューロン</h4>
+      <dl>
+        <dt>Dendrites</dt>
+        <dd>樹状突起——他のニューロンからシナプスを介して信号を受け取る、木の枝のような突起</dd>
+        <dt>Cell Body</dt>
+        <dd>細胞体——受け取った信号を統合し、発火するかどうかを判定する中枢部分</dd>
+        <dt>Axon</dt>
+        <dd>軸索——発火した電気信号を次のニューロンへ向けて伝える1本の長い経路</dd>
+        <dt>Axon terminal</dt>
+        <dd>軸索末端——軸索の先端。シナプスを介して次のニューロンへ神経伝達物質を放出する</dd>
+      </dl>
+    </div>
+
+    <div class="annotation-box art">
+      <h4>(b) 人工ニューロン（パーセプトロン）</h4>
+      <dl>
+        <dt>x₁〜xₚ</dt>
+        <dd>入力値——「単語の有無」「差出人」「リンク数」などの特徴量</dd>
+        <dt>w₁〜wₚ</dt>
+        <dd>重み——各入力をどれだけ重視するかを表す数値。学習によって自動的に調整される</dd>
+        <dt>Σ（シグマ）</dt>
+        <dd>重み付き合計——入力に重みをかけてすべて足し合わせる計算（細胞体の統合に対応）</dd>
+        <dt>g</dt>
+        <dd>活性化関数——合計値を変換する関数。閾値を超えたかどうかを判定し次の層へ渡す値を決める</dd>
+        <dt>y</dt>
+        <dd>出力値——このニューロンの計算結果。次の層への入力、または最終的な予測値になる</dd>
+      </dl>
+    </div>
+
+    <div class="note">
+      💡 共通しているのは「複数の入力を受け取り、その合計が閾値を超えると次へ信号を伝える」という考え方です。ただし生物では化学物質（神経伝達物質）による伝達、人工では数値の計算であり、仕組みは大きく異なります。人工ニューロンは生物を厳密に再現したものではなく、その動作原理からヒントを得て設計されたモデルです。
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

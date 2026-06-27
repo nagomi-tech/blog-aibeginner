@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図3：多層ニューラルネットワークの構造</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas9f3"></canvas>
+<p style="text-align:center;font-size:0.85em;color:#555;margin-top:6px;">図3：多層ニューラルネットワークの構造（入力層・隠れ層×2・出力層）</p>
+<script>
+(()=>{
+  const canvas = document.getElementById('canvas9f3');
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.min(window.innerWidth, 720);
+  const H = 360;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const layers = [
+    { n:3, label:'入力層', sub:'（特徴量）', color:'#dbeafe', stroke:'#3b82f6', labelColor:'#1d4ed8' },
+    { n:4, label:'隠れ層①', sub:'', color:'#d1fae5', stroke:'#10b981', labelColor:'#065f46' },
+    { n:4, label:'隠れ層②', sub:'', color:'#d1fae5', stroke:'#10b981', labelColor:'#065f46' },
+    { n:2, label:'出力層', sub:'（確率）', color:'#fce7f3', stroke:'#ec4899', labelColor:'#9d174d' },
+  ];
+
+  const R = 20; // neuron radius
+  const layerXs = [0.13, 0.37, 0.63, 0.87].map(f => f*W);
+  const centerY = H * 0.52;
+
+  function neuronY(layerIdx, neuronIdx) {
+    const n = layers[layerIdx].n;
+    const spacing = Math.min(70, (H*0.7) / n);
+    return centerY - (n-1)*spacing/2 + neuronIdx*spacing;
+  }
+
+  // 接続線（細く薄く）
+  for(let l=0; l<layers.length-1; l++){
+    for(let i=0; i<layers[l].n; i++){
+      for(let j=0; j<layers[l+1].n; j++){
+        const x1=layerXs[l], y1=neuronY(l,i);
+        const x2=layerXs[l+1], y2=neuronY(l+1,j);
+        ctx.strokeStyle='rgba(156,163,175,0.4)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(x1+R,y1); ctx.lineTo(x2-R,y2); ctx.stroke();
+      }
+    }
+  }
+
+  // ニューロン
+  layers.forEach((layer,li)=>{
+    for(let i=0; i<layer.n; i++){
+      const x=layerXs[li], y=neuronY(li,i);
+      ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
+      ctx.fillStyle=layer.color; ctx.fill();
+      ctx.strokeStyle=layer.stroke; ctx.lineWidth=2; ctx.stroke();
+      // 活性化関数記号（隠れ層のみ）
+      if(li>0 && li<layers.length-1){
+        ctx.fillStyle=layer.labelColor; ctx.font='11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('f', x, y);
+      }
+    }
+  });
+
+  // 入力値ラベル
+  const inputLabels = ['x₁','x₂','x₃'];
+  inputLabels.forEach((l,i)=>{
+    const y=neuronY(0,i);
+    ctx.fillStyle='#374151'; ctx.font='11px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(l, layerXs[0]-R-6, y);
+  });
+
+  // 出力値ラベル
+  const outputLabels=['スパム確率','正常確率'];
+  outputLabels.forEach((l,i)=>{
+    const y=neuronY(3,i);
+    ctx.fillStyle='#9d174d'; ctx.font='10px Arial'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(l, layerXs[3]+R+6, y);
+  });
+
+  // 層ラベル
+  layers.forEach((layer,li)=>{
+    ctx.fillStyle=layer.labelColor; ctx.font='bold 12px Helvetica Neue,Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(layer.label, layerXs[li], 22);
+    if(layer.sub){
+      ctx.font='10px Arial'; ctx.fillStyle='#6b7280';
+      ctx.fillText(layer.sub, layerXs[li], 37);
+    }
+  });
+
+  // 矢印（層間）
+  for(let l=0; l<layers.length-1; l++){
+    const x1=layerXs[l]+R+8, x2=layerXs[l+1]-R-8, y=H-28;
+    ctx.strokeStyle='#9ca3af'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+    ctx.fillStyle='#9ca3af';
+    ctx.beginPath();
+    ctx.moveTo(x2,y); ctx.lineTo(x2-7,y-4); ctx.lineTo(x2-7,y+4);
+    ctx.closePath(); ctx.fill();
+    // 重みラベル
+    const mx=(x1+x2)/2;
+    ctx.fillStyle='#f59e0b'; ctx.font='9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('重み w', mx, y-10);
+  }
+
+  // 「深層学習」ブレース
+  const h1x = layerXs[1]-R-10, h2x = layerXs[2]+R+10;
+  const by = H-10;
+  ctx.strokeStyle='#10b981'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(h1x, by-6); ctx.lineTo(h1x, by); ctx.lineTo(h2x, by); ctx.lineTo(h2x, by-6); ctx.stroke();
+  ctx.fillStyle='#065f46'; ctx.font='10px Arial'; ctx.textAlign='center';
+  ctx.fillText('隠れ層が深くなると「深層学習」', (h1x+h2x)/2, by+10);
+
+})();
+</script>
+</body>
+</html>

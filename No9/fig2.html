@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図2：活性化関数</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas9f2"></canvas>
+<p style="text-align:center;font-size:0.85em;color:#555;margin-top:6px;">図2：代表的な活性化関数——ReLU（左）とシグモイド（右）</p>
+<script>
+(()=>{
+  const canvas = document.getElementById('canvas9f2');
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.min(window.innerWidth, 720);
+  const H = 310;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  function drawGraph(options) {
+    const { ox, oy, gw, gh, xMin, xMax, yMin, yMax, yTicks, fn, color, title, xlabel, annotations } = options;
+
+    // 背景
+    ctx.fillStyle = '#f9fafb';
+    ctx.beginPath(); ctx.roundRect(ox-46, oy-gh-22, gw+76, gh+68, 8);
+    ctx.fill();
+    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+
+    // グリッド（Y軸）
+    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 0.8;
+    yTicks.forEach(v=>{
+      const py = oy - (v - yMin)/(yMax-yMin)*gh;
+      if(py >= oy-gh-1 && py <= oy+1){
+        ctx.beginPath(); ctx.moveTo(ox, py); ctx.lineTo(ox+gw, py); ctx.stroke();
+      }
+    });
+    // グリッド（X軸）
+    [-4,-2,0,2,4].forEach(v=>{
+      const px = ox + (v - xMin)/(xMax-xMin)*gw;
+      ctx.beginPath(); ctx.moveTo(px, oy-gh); ctx.lineTo(px, oy); ctx.stroke();
+    });
+
+    // 軸
+    ctx.strokeStyle = '#374151'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox+gw, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, oy-gh-5); ctx.lineTo(ox, oy+5); ctx.stroke();
+
+    // X軸ラベル
+    ctx.fillStyle='#374151'; ctx.font='10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    [-4,-2,0,2,4].forEach(v=>{
+      const px = ox + (v - xMin)/(xMax-xMin)*gw;
+      ctx.fillText(v, px, oy+13);
+    });
+
+    // Y軸ラベル
+    ctx.textAlign='right';
+    yTicks.forEach(v=>{
+      const py = oy - (v - yMin)/(yMax-yMin)*gh;
+      if(py >= oy-gh && py <= oy){
+        ctx.fillText(Number.isInteger(v)?v:v.toFixed(1), ox-6, py);
+      }
+    });
+
+    // クリッピング領域設定（グラフ枠内のみ描画）
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox-1, oy-gh-1, gw+2, gh+2);
+    ctx.clip();
+
+    // 関数曲線
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+    ctx.beginPath();
+    for(let i=0; i<=gw*2; i++){
+      const x = xMin + (xMax-xMin)*(i/(gw*2));
+      const y = fn(x);
+      const px = ox + (x-xMin)/(xMax-xMin)*gw;
+      const py = oy - (y-yMin)/(yMax-yMin)*gh;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // タイトル
+    ctx.fillStyle='#1e3a5f'; ctx.font='bold 12px Helvetica Neue,Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(title, ox+gw/2, oy-gh-12);
+
+    // X軸タイトル
+    ctx.fillStyle='#6b7280'; ctx.font='10px Arial';
+    ctx.textAlign='center';
+    ctx.fillText(xlabel, ox+gw/2, oy+27);
+
+    // 注釈
+    if(annotations) annotations.forEach(a=>{
+      ctx.fillStyle = a.color||'#374151';
+      ctx.font = (a.bold?'bold ':'') + (a.size||10) + 'px Arial';
+      ctx.textAlign = a.align||'left';
+      ctx.textBaseline='middle';
+      ctx.fillText(a.text, a.x, a.y);
+      if(a.dash){
+        ctx.save(); ctx.setLineDash(a.dash);
+        ctx.strokeStyle=a.color||'#9ca3af'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(a.lx1,a.ly1); ctx.lineTo(a.lx2,a.ly2); ctx.stroke();
+        ctx.restore();
+      }
+    });
+  }
+
+  const pad = 16;
+  const graphW = W/2 - pad*3 - 4;
+  const graphH = 185;
+  const baseY = H - 52;
+
+  // ===== 左：ReLU =====
+  // Y軸を5まで広げて「ずっと右上がり」を正しく表示
+  const rox = pad+44, roy = baseY;
+  drawGraph({
+    ox: rox, oy: roy, gw: graphW, gh: graphH,
+    xMin:-5, xMax:5, yMin:-0.5, yMax:5,
+    yTicks: [0,1,2,3,4,5],
+    fn: x => Math.max(0, x),   // クリップなし・本来のReLU
+    color: '#3b82f6',
+    title: 'ReLU',
+    xlabel: '入力値',
+    annotations: [
+      // 「0以下 → 0」ラベル
+      { text:'0以下 → 出力0', x: rox+8, y: roy-graphH*0.12, color:'#3b82f6', size:9 },
+      // 「プラス → そのまま（y=x）」ラベル
+      { text:'プラス → そのまま (y = x)', x: rox+graphW*0.42, y: roy-graphH*0.62, color:'#3b82f6', size:9 },
+      // 具体例：入力3 → 出力3
+      { text:'例）入力3 → 出力3', x: rox+graphW*0.62, y: roy-graphH*0.75, color:'#1d4ed8', size:9, bold:true },
+    ]
+  });
+
+  // 入力3→出力3 の補助点
+  const p3x = rox + (3-(-5))/(5-(-5))*graphW;
+  const p3y = roy - (3-(-0.5))/(5-(-0.5))*graphH;
+  ctx.beginPath(); ctx.arc(p3x, p3y, 4, 0, Math.PI*2);
+  ctx.fillStyle='#1d4ed8'; ctx.fill();
+  // 縦横の補助線
+  ctx.save(); ctx.setLineDash([3,3]); ctx.strokeStyle='#93c5fd'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(rox, p3y); ctx.lineTo(p3x, p3y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p3x, roy); ctx.lineTo(p3x, p3y); ctx.stroke();
+  ctx.restore();
+
+  // ===== 右：シグモイド =====
+  const sox = W/2+pad+18, soy = baseY;
+  drawGraph({
+    ox: sox, oy: soy, gw: graphW, gh: graphH,
+    xMin:-5, xMax:5, yMin:-0.1, yMax:1.1,
+    yTicks: [0, 0.5, 1.0],
+    fn: x => 1/(1+Math.exp(-x)),
+    color: '#10b981',
+    title: 'シグモイド',
+    xlabel: '入力値',
+  });
+
+  // シグモイドの0.5補助線
+  const s05y = soy - (0.5-(-0.1))/(1.1-(-0.1))*graphH;
+  ctx.save(); ctx.setLineDash([4,3]); ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(sox, s05y); ctx.lineTo(sox+graphW, s05y); ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle='#f59e0b'; ctx.font='9px Arial'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('0.5', sox+graphW+3, s05y);
+  ctx.fillText('出力は必ず0〜1の範囲', sox+8, soy-graphH*0.08, 9);
+
+  // Y軸ラベル（共通）
+  ctx.save();
+  ctx.translate(8, H/2-10);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#6b7280'; ctx.font='10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('出力値', 0, 0);
+  ctx.restore();
+})();
+</script>
+</body>
+</html>
