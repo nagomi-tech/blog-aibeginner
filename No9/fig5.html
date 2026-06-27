@@ -27,7 +27,7 @@
   const canvas = document.getElementById('canvas9f5');
   const dpr = window.devicePixelRatio || 1;
   const W = Math.min(window.innerWidth, 720);
-  const H = 360;
+  const H = 500;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   canvas.style.width = W + 'px';
@@ -35,42 +35,85 @@
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 
-  // レイアウト
-  const topH = H * 0.52;   // 上段：ネットワーク図
-  const botH = H - topH;   // 下段：損失グラフ
+  const LABEL_H = 28;   // 層ラベル帯の高さ
+  const MSG_H   = 26;   // 説明テキスト枠の高さ
+  const MSG_PAD = 4;    // ラベル帯と説明枠の間隔
+  const NET_TOP = LABEL_H + MSG_H + MSG_PAD + 10; // ネットワーク本体の開始Y
+
+  const topH = 240;     // 上段全体（ラベル＋説明＋ネットワーク＋矢印）
+  const botH = H - topH;
 
   const layers = [
-    {n:3, label:'入力層', fc:'#dbeafe', sc:'#3b82f6', tc:'#1d4ed8'},
-    {n:4, label:'隠れ層①', fc:'#d1fae5', sc:'#10b981', tc:'#065f46'},
-    {n:4, label:'隠れ層②', fc:'#d1fae5', sc:'#10b981', tc:'#065f46'},
-    {n:2, label:'出力層', fc:'#fce7f3', sc:'#ec4899', tc:'#9d174d'},
+    {n:3, label:'入力層',  fc:'#dbeafe', sc:'#3b82f6', tc:'#1d4ed8', updFc:'#dbeafe', updSc:'#3b82f6'},
+    {n:4, label:'隠れ層①', fc:'#d1fae5', sc:'#10b981', tc:'#065f46', updFc:'#fef3c7', updSc:'#f59e0b'},
+    {n:4, label:'隠れ層②', fc:'#d1fae5', sc:'#10b981', tc:'#065f46', updFc:'#fef3c7', updSc:'#f59e0b'},
+    {n:2, label:'出力層',  fc:'#fce7f3', sc:'#ec4899', tc:'#9d174d', updFc:'#fce7f3', updSc:'#ec4899'},
   ];
-  const R = 16;
-  const lxs = [0.12,0.38,0.62,0.88].map(f=>f*W);
-  const cy = topH * 0.58;
+  const R = 15;
+  const lxs = [0.10, 0.34, 0.58, 0.78].map(f=>f*W);
 
-  function ny(li,ni){
-    const n=layers[li].n;
-    const sp=Math.min(52,(topH*0.62)/n);
-    return cy-(n-1)*sp/2+ni*sp;
+  // ネットワーク本体の中心Y（NET_TOPから矢印帯手前まで）
+  const netAreaH = topH - NET_TOP - 50; // 矢印2本分の余白
+  const cy = NET_TOP + netAreaH * 0.48;
+
+  function ny(li, ni){
+    const n = layers[li].n;
+    const sp = Math.min(42, netAreaH * 0.85 / n);
+    return cy - (n-1)*sp/2 + ni*sp;
   }
 
-  // 損失曲線データ（擬似的な減衰曲線）
   const totalEpochs = 8;
-  let currentEpoch = 0; // 0=初期, 1〜8=学習中
-  let phase = 0; // 0=待機, 1=順伝播表示, 2=逆伝播表示, 3=損失更新
+  let currentEpoch = 0;
+  let phase = 0;
+  // 0=待機 1=順伝播 2=損失計算 3=逆伝播 4=重み更新
 
   function lossAt(e){ return 2.4 * Math.exp(-0.45*e) + 0.18; }
 
-  function drawNetwork(fwdActive, bwdActive){
-    // 接続線
-    for(let l=0;l<layers.length-1;l++){
-      for(let i=0;i<layers[l].n;i++){
-        for(let j=0;j<layers[l+1].n;j++){
-          let color='rgba(209,213,219,0.5)', lw=0.8;
-          if(fwdActive && l < fwdActive) { color='rgba(59,130,246,0.3)'; lw=1.2; }
-          if(bwdActive && l >= layers.length-1-bwdActive) { color='rgba(239,68,68,0.3)'; lw=1.2; }
-          ctx.strokeStyle=color; ctx.lineWidth=lw;
+  // ===== 描画関数 =====
+
+  function drawLayerLabels(){
+    // 層ラベル帯
+    layers.forEach((ld, li)=>{
+      ctx.fillStyle = ld.tc;
+      ctx.font = 'bold 11px Helvetica Neue,Arial';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(ld.label, lxs[li], LABEL_H/2 + 2);
+    });
+  }
+
+  function drawMsgBox(){
+    const msgs = [
+      'ボタンを押して学習を進めてください',
+      '① 順伝播：入力から出力へ予測を計算',
+      '② 損失の計算：予測値と正解のズレを数値化',
+      '③ 逆伝播：損失を出力層から逆向きに伝播',
+      '④ 重みを更新——隠れ層の色が変わりました',
+    ];
+    const msg = phase === 4
+      ? `④ エポック${currentEpoch}：重みを更新（損失 ${lossAt(currentEpoch).toFixed(2)}）`
+      : msgs[phase];
+
+    const my = LABEL_H + MSG_PAD;
+    const colors    = ['#f9fafb','#eff6ff','#fff7ed','#fff1f2','#fffbeb'];
+    const borders   = ['#e5e7eb','#bfdbfe','#fed7aa','#fecdd3','#fde68a'];
+    const textColors= ['#6b7280','#1d4ed8','#c2410c','#b91c1c','#92400e'];
+
+    ctx.fillStyle = colors[phase];
+    ctx.beginPath(); ctx.roundRect(W*0.04, my, W*0.92, MSG_H, 4); ctx.fill();
+    ctx.strokeStyle = borders[phase]; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = textColors[phase];
+    ctx.font = '11px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(msg, W*0.5, my + MSG_H/2);
+  }
+
+  function drawNetwork(){
+    for(let l=0; l<layers.length-1; l++){
+      for(let i=0; i<layers[l].n; i++){
+        for(let j=0; j<layers[l+1].n; j++){
+          let color = 'rgba(209,213,219,0.5)', lw = 0.8;
+          if(phase >= 1 && l < phase) { color = 'rgba(59,130,246,0.25)'; lw = 1.2; }
+          if(phase >= 3 && l >= layers.length-1-2) { color = 'rgba(239,68,68,0.25)'; lw = 1.2; }
+          ctx.strokeStyle = color; ctx.lineWidth = lw;
           ctx.beginPath();
           ctx.moveTo(lxs[l]+R, ny(l,i));
           ctx.lineTo(lxs[l+1]-R, ny(l+1,j));
@@ -79,27 +122,25 @@
       }
     }
 
-    // ニューロン
-    layers.forEach((ld,li)=>{
-      for(let i=0;i<ld.n;i++){
+    layers.forEach((ld, li)=>{
+      const updated = (phase === 4 && (li === 1 || li === 2));
+      const fc = updated ? ld.updFc : ld.fc;
+      const sc = updated ? ld.updSc : ld.sc;
+      const tc = updated ? '#92400e' : ld.tc;
+
+      for(let i=0; i<ld.n; i++){
         const x=lxs[li], y=ny(li,i);
-        let fc=ld.fc, sc=ld.sc;
         ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
-        ctx.fillStyle=fc; ctx.fill();
-        ctx.strokeStyle=sc; ctx.lineWidth=2; ctx.stroke();
-        if(li>0&&li<3){
-          ctx.fillStyle=ld.tc; ctx.font='10px Arial';
-          ctx.textAlign='center'; ctx.textBaseline='middle';
-          ctx.fillText('f', x, y);
+        ctx.fillStyle = fc; ctx.fill();
+        ctx.strokeStyle = sc; ctx.lineWidth = updated ? 2.5 : 2; ctx.stroke();
+
+        if(li > 0 && li < 3){
+          ctx.fillStyle = tc;
+          ctx.font = updated ? 'bold 9px Arial' : '10px Arial';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(updated ? 'w更新' : 'f', x, y);
         }
       }
-    });
-
-    // 層ラベル
-    layers.forEach((ld,li)=>{
-      ctx.fillStyle=ld.tc; ctx.font='bold 11px Helvetica Neue,Arial';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(ld.label, lxs[li], 16);
     });
   }
 
@@ -110,150 +151,171 @@
     ctx.fillStyle=color;
     ctx.beginPath();
     ctx.moveTo(x2,y2);
-    ctx.lineTo(x2-9*Math.cos(a-0.4),y2-9*Math.sin(a-0.4));
-    ctx.lineTo(x2-9*Math.cos(a+0.4),y2-9*Math.sin(a+0.4));
+    ctx.lineTo(x2-8*Math.cos(a-0.4),y2-8*Math.sin(a-0.4));
+    ctx.lineTo(x2-8*Math.cos(a+0.4),y2-8*Math.sin(a+0.4));
     ctx.closePath(); ctx.fill();
   }
 
-  function drawLossGraph(){
-    const gx = W*0.08, gy = topH + botH*0.82;
-    const gw = W*0.84, gh = botH*0.62;
+  function drawPhaseArrows(){
+    const ay1 = topH - 38;
+    const ay2 = topH - 16;
 
-    // 背景
+    // 順伝播（→）青
+    for(let l=0;l<3;l++){
+      const x1=lxs[l]+R+4, x2=lxs[l+1]-R-4;
+      drawArrow(x1,ay1,x2,ay1, phase>=1?'#3b82f6':'#d1d5db', phase>=1?2:1);
+    }
+    ctx.fillStyle=phase>=1?'#1d4ed8':'#9ca3af';
+    ctx.font=(phase>=1?'bold ':'')+'9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('→ 順伝播（予測を計算）', W*0.44, ay1-10);
+
+    // 逆伝播（←）赤
+    for(let l=2;l>=0;l--){
+      const x1=lxs[l+1]-R-4, x2=lxs[l]+R+4;
+      drawArrow(x1,ay2,x2,ay2, phase>=3?'#ef4444':'#d1d5db', phase>=3?2:1);
+    }
+    ctx.fillStyle=phase>=3?'#b91c1c':'#9ca3af';
+    ctx.font=(phase>=3?'bold ':'')+'9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('← 逆伝播（誤差を逆向きに伝える）', W*0.44, ay2+10);
+  }
+
+  function drawLossBox(){
+    const bw=70, bh=38;
+    const bx = Math.min(lxs[3]+R+10, W-bw-4);
+    const by = cy - bh/2;
+    const active = phase>=2;   // 損失計算フェーズから表示
+    const highlight = phase===2;
+    ctx.fillStyle = highlight?'#fef08a': active?'#fef3c7':'#f9fafb';
+    ctx.strokeStyle = highlight?'#eab308': active?'#f59e0b':'#d1d5db';
+    ctx.lineWidth = highlight ? 2.5 : 1.5;
+    ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = highlight?'#713f12': active?'#92400e':'#9ca3af';
+    ctx.font='bold 10px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('損失', bx+bw/2, by+11);
+    if(active){
+      ctx.font = highlight?'bold 12px Arial':'11px Arial';
+      ctx.fillText(lossAt(currentEpoch).toFixed(2), bx+bw/2, by+27);
+    }
+  }
+
+  function drawLossGraph(){
+    const gx = W*0.10;
+    const gw = W*0.80;
+    const gh = botH*0.52;
+    const gy = topH + botH*0.88;
+
+    // 背景（topHから20px下に開始して間隔を確保）
     ctx.fillStyle='#f9fafb';
-    ctx.beginPath(); ctx.roundRect(gx-8, topH+6, gw+16, botH-10, 6); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(gx-10, topH+20, gw+20, botH-26, 6); ctx.fill();
     ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
+
+    // タイトル
+    ctx.fillStyle='#1e3a5f'; ctx.font='bold 11px Helvetica Neue,Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('学習の進行と損失の変化', gx+gw/2, topH+34);
 
     // 軸
     ctx.strokeStyle='#374151'; ctx.lineWidth=1.2;
     ctx.beginPath(); ctx.moveTo(gx,gy-gh); ctx.lineTo(gx,gy); ctx.lineTo(gx+gw,gy); ctx.stroke();
 
-    // ラベル
+    // X軸ラベル
     ctx.fillStyle='#374151'; ctx.font='10px Arial';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('エポック（繰り返し回数）', gx+gw/2, gy+14);
-    ctx.save(); ctx.translate(gx-22,gy-gh/2); ctx.rotate(-Math.PI/2);
+
+    // Y軸ラベル
+    ctx.save(); ctx.translate(gx-24,gy-gh/2); ctx.rotate(-Math.PI/2);
     ctx.fillText('損失（Loss）', 0, 0); ctx.restore();
 
-    // Y軸目盛
+    // Y軸目盛（上限を2.8に広げて初期損失2.58を収める）
+    const yMax = 2.8;
     [0,1,2].forEach(v=>{
-      const py=gy-(v/2.5)*gh;
+      const py=gy-(v/yMax)*gh;
       ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=0.8;
       ctx.beginPath(); ctx.moveTo(gx,py); ctx.lineTo(gx+gw,py); ctx.stroke();
-      ctx.fillStyle='#9ca3af'; ctx.font='9px Arial'; ctx.textAlign='right';
+      ctx.fillStyle='#9ca3af'; ctx.font='9px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
       ctx.fillText(v.toFixed(1), gx-4, py);
     });
 
-    // 損失曲線（描画済み分）
-    if(currentEpoch > 0){
+    // 損失曲線（phase>=2で初期損失点も表示）
+    if(phase >= 2 || currentEpoch > 0){
       ctx.strokeStyle='#6366f1'; ctx.lineWidth=2.5; ctx.setLineDash([]);
-      ctx.beginPath();
-      for(let e=0;e<=currentEpoch;e++){
-        const px=gx+(e/totalEpochs)*gw;
-        const loss=lossAt(e);
-        const py=gy-(loss/2.5)*gh;
-        if(e===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+
+      // エポック0の初期点（phase=2：損失計算フェーズで表示開始）
+      if(currentEpoch === 0 && phase >= 2){
+        // 初期損失を点のみプロット
+        const px0 = gx;
+        const loss0 = lossAt(0);
+        const py0 = gy-(loss0/yMax)*gh;
+        ctx.beginPath(); ctx.arc(px0, py0, 5, 0, Math.PI*2);
+        ctx.fillStyle='#6366f1'; ctx.fill();
+        ctx.fillStyle='#4338ca'; ctx.font='bold 10px Arial';
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText('初期損失: '+loss0.toFixed(2), px0+8, py0-10);
       }
-      ctx.stroke();
 
-      // 現在のエポック点
-      const cpx=gx+(currentEpoch/totalEpochs)*gw;
-      const closs=lossAt(currentEpoch);
-      const cpy=gy-(closs/2.5)*gh;
-      ctx.beginPath(); ctx.arc(cpx,cpy,5,0,Math.PI*2);
-      ctx.fillStyle='#6366f1'; ctx.fill();
-      ctx.fillStyle='#4338ca'; ctx.font='bold 10px Arial'; ctx.textAlign='left';
-      ctx.fillText('損失: '+closs.toFixed(2), cpx+8, cpy);
-    }
+      // エポック1以降は曲線を描く
+      if(currentEpoch > 0){
+        ctx.beginPath();
+        for(let e=0; e<=currentEpoch; e++){
+          const px=gx+(e/totalEpochs)*gw;
+          const loss=lossAt(e);
+          const py=gy-(loss/yMax)*gh;
+          if(e===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+        }
+        ctx.stroke();
 
-    // タイトル
-    ctx.fillStyle='#1e3a5f'; ctx.font='bold 11px Helvetica Neue,Arial';
-    ctx.textAlign='center';
-    ctx.fillText('学習の進行と損失の変化', gx+gw/2, topH+18);
-  }
+        const cpx=gx+(currentEpoch/totalEpochs)*gw;
+        const closs=lossAt(currentEpoch);
+        const cpy=gy-(closs/yMax)*gh;
+        ctx.beginPath(); ctx.arc(cpx,cpy,5,0,Math.PI*2);
+        ctx.fillStyle='#6366f1'; ctx.fill();
 
-  function drawPhaseArrows(){
-    const ay = topH * 0.92;
-    // 順伝播矢印（→）
-    for(let l=0;l<3;l++){
-      const x1=lxs[l]+R+4, x2=lxs[l+1]-R-4;
-      const active = phase >= 1;
-      drawArrow(x1,ay,x2,ay, active?'#3b82f6':'#d1d5db', active?2:1);
-    }
-    // 順伝播ラベル
-    ctx.fillStyle=phase>=1?'#1d4ed8':'#9ca3af';
-    ctx.font=(phase>=1?'bold ':'')+'10px Arial'; ctx.textAlign='center';
-    ctx.fillText('順伝播（予測を計算）', W*0.5, ay-12);
-
-    // 逆伝播矢印（←）
-    const ay2 = topH * 0.99;
-    for(let l=2;l>=0;l--){
-      const x1=lxs[l+1]-R-4, x2=lxs[l]+R+4;
-      const active = phase >= 2;
-      drawArrow(x1,ay2,x2,ay2, active?'#ef4444':'#d1d5db', active?2:1);
-    }
-    ctx.fillStyle=phase>=2?'#b91c1c':'#9ca3af';
-    ctx.font=(phase>=2?'bold ':'')+'10px Arial'; ctx.textAlign='center';
-    ctx.fillText('逆伝播（誤差を逆向きに伝える）', W*0.5, ay2+12);
-  }
-
-  // 損失ボックス（出力層の右）
-  function drawLossBox(){
-    const bx=lxs[3]+R+8, by=cy-22, bw=80, bh=44;
-    const active=phase>=1;
-    ctx.fillStyle=active?'#fef3c7':'#f9fafb';
-    ctx.strokeStyle=active?'#f59e0b':'#d1d5db'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill(); ctx.stroke();
-    ctx.fillStyle=active?'#92400e':'#9ca3af';
-    ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('損失', bx+bw/2, by+14);
-    if(active && currentEpoch>0){
-      ctx.font='11px Arial';
-      ctx.fillText(lossAt(currentEpoch).toFixed(2), bx+bw/2, by+30);
+        const labelX = cpx > gx+gw*0.75 ? cpx-8 : cpx+8;
+        ctx.fillStyle='#4338ca'; ctx.font='bold 10px Arial';
+        ctx.textAlign = cpx > gx+gw*0.75 ? 'right' : 'left';
+        ctx.textBaseline='middle';
+        ctx.fillText('損失: '+closs.toFixed(2), labelX, cpy-10);
+      }
     }
   }
-
-  // ステップ説明
-  const msgs=[
-    'ボタンを押して学習を進めてください',
-    '① 順伝播：入力から出力へ予測を計算',
-    '② 逆伝播：損失を出力層から逆向きに伝え、重みを更新',
-    `エポック ${currentEpoch}/${totalEpochs}：損失が下がりました`,
-  ];
 
   function draw(){
     ctx.clearRect(0,0,W,H);
 
-    // 上下の区切り
+    // 上下区切り線
     ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(0,topH); ctx.lineTo(W,topH); ctx.stroke();
 
-    drawNetwork(phase>=1?3:0, phase>=2?3:0);
+    drawLayerLabels();
+    drawMsgBox();
+    drawNetwork();
     drawPhaseArrows();
     drawLossBox();
     drawLossGraph();
 
-    // 説明テキスト
-    const msg = phase===3 ? `エポック ${currentEpoch}/${totalEpochs}：損失 ${lossAt(currentEpoch).toFixed(2)}（学習が進んでいます）` : msgs[phase];
-    ctx.fillStyle='#f9fafb';
-    ctx.beginPath(); ctx.roundRect(W*0.05, topH-36, W*0.9, 26, 5); ctx.fill();
-    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.stroke();
-    ctx.fillStyle='#4338ca'; ctx.font='11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(msg, W*0.5, topH-23);
+    // 凡例（phase=3のとき）
+    if(phase === 4){
+      const lx = lxs[1]-R, ly = cy + 46;
+      ctx.fillStyle='#fef3c7'; ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.roundRect(lx, ly, 120, 18, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#92400e'; ctx.font='10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('■ 重みが更新された層', lx+60, ly+9);
+    }
   }
 
   document.getElementById('btn9f5').addEventListener('click',()=>{
     if(phase===0){ phase=1; draw(); return; }
-    if(phase===1){ phase=2; draw(); return; }
-    if(phase===2){
+    if(phase===1){ phase=2; draw(); return; }  // 順伝播→損失計算
+    if(phase===2){ phase=3; draw(); return; }  // 損失計算→逆伝播
+    if(phase===3){                              // 逆伝播→重み更新
       if(currentEpoch < totalEpochs){ currentEpoch++; }
-      phase=3; draw();
-      setTimeout(()=>{ phase=1; draw(); },600);
+      phase=4; draw();
+      setTimeout(()=>{ phase=1; draw(); },2500);
       return;
     }
-    if(phase===3){
-      if(currentEpoch < totalEpochs){ phase=1; draw(); }
-    }
+    if(phase===4 && currentEpoch < totalEpochs){ phase=1; draw(); }
   });
   document.getElementById('rst9f5').addEventListener('click',()=>{
     phase=0; currentEpoch=0; draw();

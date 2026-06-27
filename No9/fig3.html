@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -17,7 +18,7 @@
   const canvas = document.getElementById('canvas9f3');
   const dpr = window.devicePixelRatio || 1;
   const W = Math.min(window.innerWidth, 720);
-  const H = 360;
+  const H = 385;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   canvas.style.width = W + 'px';
@@ -113,11 +114,11 @@
 
   // 「深層学習」ブレース
   const h1x = layerXs[1]-R-10, h2x = layerXs[2]+R+10;
-  const by = H-10;
+  const by = H-18;
   ctx.strokeStyle='#10b981'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(h1x, by-6); ctx.lineTo(h1x, by); ctx.lineTo(h2x, by); ctx.lineTo(h2x, by-6); ctx.stroke();
   ctx.fillStyle='#065f46'; ctx.font='10px Arial'; ctx.textAlign='center';
-  ctx.fillText('隠れ層が深くなると「深層学習」', (h1x+h2x)/2, by+10);
+  ctx.fillText('隠れ層が深くなると「深層学習」', (h1x+h2x)/2, by+14);
 
 })();
 </script>

@@ -147,15 +147,20 @@
     ctx.fillStyle='#1d4ed8'; ctx.font='11px Arial';
     ctx.fillText(msgs[step], W*0.5, H-24);
 
-    // 矢印
+    // 矢印（計算の流れ）
     for(let l=0;l<2;l++){
       const active=step>=l+2;
       const ax=layerXs[l]+R+6, bx=layerXs[l+1]-R-6, ay=(H-44)/2+30;
       if(active){
-        ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx-6,ay); ctx.stroke();
+        ctx.strokeStyle='#f59e0b'; ctx.lineWidth=5;
+        ctx.lineCap='round';
+        ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx-10,ay); ctx.stroke();
+        ctx.lineCap='butt';
         ctx.fillStyle='#f59e0b';
-        ctx.beginPath(); ctx.moveTo(bx,ay); ctx.lineTo(bx-8,ay-4); ctx.lineTo(bx-8,ay+4); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(bx,ay); ctx.lineTo(bx-13,ay-7); ctx.lineTo(bx-13,ay+7); ctx.closePath(); ctx.fill();
+        // ラベル
+        ctx.fillStyle='#92400e'; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('計算の流れ', (ax+bx)/2, ay-14);
       }
     }
   }
