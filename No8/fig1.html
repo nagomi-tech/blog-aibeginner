@@ -1,0 +1,139 @@
+<style>
+  .fig1-block { margin:0; padding:16px; }
+  .fig1-caption { text-align:center; font-size:0.85em; color:#555; margin-top:6px; }
+</style>
+
+<div class="fig1-block">
+  <div id="fig01_mount"></div>
+  <p class="fig1-caption">図1：バギング（並列学習）とブースティング（直列学習）の比較</p>
+</div>
+
+<script>
+(function() {
+  var cv = document.createElement('canvas');
+  cv.width  = 760;
+  cv.height = 500;
+  cv.style.cssText = 'max-width:100%;display:block;margin:0 auto;';
+  document.getElementById('fig01_mount').appendChild(cv);
+
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+
+  function rr(x,y,w,h,r,fi,st,lw) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+    ctx.closePath();
+    if (fi) { ctx.fillStyle=fi; ctx.fill(); }
+    if (st) { ctx.strokeStyle=st; ctx.lineWidth=lw||1.5; ctx.stroke(); }
+  }
+  function ar(x1,y1,x2,y2,col,lw) {
+    col=col||'#555'; lw=lw||2;
+    ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    var a=Math.atan2(y2-y1,x2-x1), n=9;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-n*Math.cos(a-0.4), y2-n*Math.sin(a-0.4));
+    ctx.lineTo(x2-n*Math.cos(a+0.4), y2-n*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  function tx(s,x,y,sz,col,al,bold) {
+    ctx.font = (bold?'bold ':'')+sz+'px "Helvetica Neue",Arial,sans-serif';
+    ctx.fillStyle = col||'#333';
+    ctx.textAlign = al||'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(s,x,y);
+  }
+  function ln(x1,y1,x2,y2,col,lw,dash) {
+    ctx.strokeStyle=col||'#aaa'; ctx.lineWidth=lw||1;
+    ctx.setLineDash(dash||[]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.clearRect(0,0,W,H);
+  rr(2,2,W-4,H-4,10,'#FAFAFA','#E0E0E0');
+
+  /* ===== 左：バギング ===== */
+  var LCX = 170;
+  tx('バギング（ランダムフォレスト）', LCX, 24, 12, '#1565C0', 'center', true);
+  tx('並列学習——N本の木を同時・独立に作る', LCX, 40, 10, '#555', 'center');
+
+  rr(LCX-58, 54, 116, 32, 6, '#E3F2FD', '#1565C0');
+  tx('学習データ', LCX, 70, 12, '#1565C0');
+
+  var tXs = [LCX-96, LCX, LCX+96];
+  tXs.forEach(function(tx_) { ar(LCX, 86, tx_, 110, '#1565C0', 1.5); });
+  tXs.forEach(function(tx_, i) {
+    rr(tx_-34, 112, 68, 38, 6, '#BBDEFB', '#1565C0');
+    tx('木 '+(i+1), tx_, 124, 11, '#1565C0');
+    tx('（独立）', tx_, 138, 9, '#555');
+  });
+  tXs.forEach(function(tx_) { ar(tx_, 150, LCX, 180, '#1565C0', 1.5); });
+
+  rr(LCX-54, 182, 108, 32, 6, '#1565C0', '#0D47A1');
+  tx('多数決・平均', LCX, 198, 12, '#fff');
+  ar(LCX, 214, LCX, 236, '#1565C0');
+  rr(LCX-48, 238, 96, 32, 6, '#E8F5E9', '#388E3C');
+  tx('最終予測', LCX, 254, 12, '#2E7D32');
+
+  /* ===== 仕切り ===== */
+  ln(W/2, 14, W/2, H-54, '#ddd', 1.5, [6,4]);
+
+  /* ===== 右：ブースティング ===== */
+  var RCX = W/2 + 178;
+  var BW = 130;
+  var BX = RCX - BW/2;
+
+  tx('ブースティング（GBM / XGBoost / LightGBM）', RCX, 24, 11, '#B71C1C', 'center', true);
+  tx('直列学習——N本の木を順番に積み重ねる', RCX, 40, 10, '#555', 'center');
+
+  rr(RCX-58, 54, 116, 32, 6, '#FFEBEE', '#B71C1C');
+  tx('学習データ', RCX, 70, 12, '#B71C1C');
+
+  ar(RCX, 86, RCX, 108, '#B71C1C');
+  rr(BX, 110, BW, 40, 6, '#FFCDD2', '#B71C1C', 2);
+  tx('木 1（初期予測）', RCX, 122, 11, '#B71C1C');
+  tx('→ 残差①を計算', RCX, 138, 10, '#E65100');
+
+  ar(RCX, 150, RCX, 170, '#E65100');
+  rr(BX+8, 172, BW-16, 24, 4, '#FFF9C4', '#F9A825');
+  tx('残差①（修正すべき誤差）', RCX, 184, 10, '#E65100');
+
+  ar(RCX, 196, RCX, 216, '#B71C1C');
+  rr(BX, 218, BW, 40, 6, '#EF9A9A', '#C62828', 2);
+  tx('木 2（残差①を学習）', RCX, 230, 11, '#C62828');
+  tx('→ 残差②を計算', RCX, 246, 10, '#E65100');
+
+  ar(RCX, 258, RCX, 278, '#E65100');
+  rr(BX+8, 280, BW-16, 24, 4, '#FFF9C4', '#F9A825');
+  tx('残差②（さらに小さい）', RCX, 292, 10, '#E65100');
+
+  ar(RCX, 304, RCX, 324, '#B71C1C');
+  rr(BX, 326, BW, 40, 6, '#E53935', '#7F0000', 2);
+  tx('木 3（残差②を学習）', RCX, 338, 11, '#fff');
+  tx('→ 残差③（さらに小さく）', RCX, 354, 10, '#FFCDD2');
+
+  var di;
+  for (di=0; di<3; di++) {
+    ctx.beginPath();
+    ctx.arc(RCX-8+di*8, 378, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = '#B71C1C'; ctx.fill();
+  }
+  tx('（木N本まで繰り返す）', RCX, 396, 9, '#888');
+
+  ar(RCX, 406, RCX, 424, '#B71C1C');
+  rr(BX-6, 426, BW+12, 32, 6, '#E8F5E9', '#388E3C', 2);
+  tx('木1＋木2＋…＋木N を加算', RCX, 442, 11, '#2E7D32');
+
+  /* ===== 下部：共通キャプション ===== */
+  rr(14, H-40, W-28, 28, 6, '#F5F5F5', '#e0e0e0');
+  tx('バギング：N本の木の予測を平均する', W/4, H-26, 11, '#1565C0');
+  tx('ブースティング：N本の木の予測を加算する', W*3/4, H-26, 11, '#B71C1C');
+  ln(W/2, H-40, W/2, H-12, '#ddd', 1);
+
+})();
+</script>

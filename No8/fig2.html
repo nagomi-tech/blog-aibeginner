@@ -1,0 +1,168 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>図2</title>
+<style>
+  body { margin:0; padding:16px; background:#fff;
+    font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif; }
+  .fig-caption { text-align:center; font-size:0.85em; color:#555; margin-top:6px; }
+</style>
+
+
+<div id="fig02_mount"></div>
+<p class="fig-caption">図2：木の本数と予測精度の推移——過学習を防ぐ2つの方法</p>
+
+<script>
+(function() {
+
+  var cv = document.createElement('canvas');
+  cv.width  = 760;
+  cv.height = 460;
+  cv.style.cssText = 'max-width:100%;display:block;margin:0 auto;';
+  document.getElementById('fig02_mount').appendChild(cv);
+
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+
+  function rr(x,y,w,h,r,fi,st,lw) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+    ctx.closePath();
+    if (fi) { ctx.fillStyle=fi; ctx.fill(); }
+    if (st) { ctx.strokeStyle=st; ctx.lineWidth=lw||1.5; ctx.stroke(); }
+  }
+  function tx(s,x,y,sz,col,al,bold) {
+    ctx.font = (bold?'bold ':'')+sz+'px "Helvetica Neue",Arial,sans-serif';
+    ctx.fillStyle = col||'#333';
+    ctx.textAlign = al||'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(s,x,y);
+  }
+  function ln(x1,y1,x2,y2,col,lw,dash) {
+    ctx.strokeStyle=col||'#aaa'; ctx.lineWidth=lw||1;
+    ctx.setLineDash(dash||[]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.clearRect(0,0,W,H);
+  rr(2,2,W-4,H-4,10,'#FAFAFA','#E0E0E0');
+
+  /* ────────────────────────────────
+     グラフ領域の定義
+     GY      = グラフ上端（精度が高い側）
+     GY+GH   = グラフ下端（精度が低い側）
+  ──────────────────────────────── */
+  var GX = 70, GY = 40, GW = 540, GH = 320;
+
+  /* タイトル */
+  tx('木の本数（n_estimators）と予測精度の推移', GX+GW/2, GY-20, 13, '#333', 'center', true);
+
+  /* 過学習ゾーン（bestXより右を先に塗る） */
+  var BEST_RATIO = 0.48;
+  var bestX = GX + GW * BEST_RATIO;
+  ctx.fillStyle = 'rgba(255,235,238,0.6)';
+  ctx.fillRect(bestX, GY, GX+GW-bestX, GH);
+  tx('← 過学習ゾーン', bestX+(GX+GW-bestX)/2, GY+GH/2-8,  11, '#C62828', 'center', true);
+  tx('（精度が下がり始める）', bestX+(GX+GW-bestX)/2, GY+GH/2+10, 10, '#C62828', 'center');
+
+  /* 軸を描く */
+  ctx.strokeStyle='#666'; ctx.lineWidth=1.5; ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(GX, GY); ctx.lineTo(GX, GY+GH); ctx.lineTo(GX+GW, GY+GH);
+  ctx.stroke();
+
+  /* Y軸ラベル */
+  ctx.save();
+  ctx.translate(GX-46, GY+GH/2);
+  ctx.rotate(-Math.PI/2);
+  tx('予測精度（大きいほど良い）', 0, 0, 11, '#555');
+  ctx.restore();
+  tx('高', GX-8, GY+6,    10, '#888', 'right');
+  tx('低', GX-8, GY+GH-6, 10, '#888', 'right');
+
+  /* X軸ラベル */
+  tx('木の本数 →', GX+GW/2, GY+GH+20, 11, '#555');
+
+  function accToY(acc) {
+    return GY + 10 + (GH - 20) * (1 - acc);
+  }
+
+  /* ── 青：原点から急上昇し右端まで上がり続ける ── */
+  ctx.strokeStyle = '#1565C0'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(GX, accToY(0));
+  ctx.bezierCurveTo(
+    GX + GW*0.18, accToY(0.72),   /* 急上昇の制御点 */
+    GX + GW*0.55, accToY(0.88),   /* 緩やかになる制御点 */
+    GX + GW,      accToY(0.92)    /* 右端 */
+  );
+  ctx.stroke();
+
+  /* ── 赤：原点から上昇→ピーク→緩やかに下降、常に青より下 ── */
+  ctx.strokeStyle = '#E53935'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(GX, accToY(0));
+  /* 上昇フェーズ：原点 → ピーク(BEST_RATIO付近) */
+  ctx.bezierCurveTo(
+    GX + GW*0.16, accToY(0.55),   /* 急上昇の制御点 */
+    GX + GW*0.38, accToY(0.65),   /* ピーク手前 */
+    GX + GW*BEST_RATIO, accToY(0.65)  /* ピーク */
+  );
+  /* 下降フェーズ：ピーク → 緩やかに下降 */
+  ctx.bezierCurveTo(
+    GX + GW*0.62, accToY(0.65),   /* ピーク直後はほぼ横ばい */
+    GX + GW*0.85, accToY(0.52),   /* 緩やかに下降 */
+    GX + GW,      accToY(0.45)    /* 右端 */
+  );
+  ctx.stroke();
+
+  /* 最良点 */
+  var bestY = accToY(0.65);
+  ln(bestX, GY, bestX, GY+GH, '#43A047', 2, [6,4]);
+  ctx.beginPath(); ctx.arc(bestX, bestY, 6, 0, Math.PI*2);
+  ctx.fillStyle = '#43A047'; ctx.fill();
+  tx('最適な木の本数', bestX-8, GY+16, 10, '#2E7D32', 'right', true);
+
+  /* ── 凡例 ── */
+  var lx = GX+14, ly = GY+14;
+  ctx.fillStyle='#1565C0'; ctx.fillRect(lx, ly, 22, 3);
+  tx('学習データの精度', lx+28, ly+1, 11, '#1565C0', 'left');
+  ctx.fillStyle='#E53935'; ctx.fillRect(lx, ly+22, 22, 3);
+  tx('検証データの精度', lx+28, ly+23, 11, '#E53935', 'left');
+
+  /* ────────────────────────────────
+     右側：過学習を防ぐ2つの方法
+  ──────────────────────────────── */
+  var RX = GX+GW+18;
+  var RW = W-RX-14;
+
+  tx('過学習を防ぐ方法', RX+RW/2, GY+10, 12, '#333', 'center', true);
+
+  rr(RX, GY+28, RW, 108, 6, '#E3F2FD', '#1565C0', 1.5);
+  tx('① 木の本数を',      RX+RW/2, GY+48,  11, '#1565C0', 'center', true);
+  tx('あらかじめ制限する', RX+RW/2, GY+64,  11, '#1565C0', 'center', true);
+  tx('n_estimators を',   RX+RW/2, GY+86,  10, '#555',    'center');
+  tx('小さく設定する。',   RX+RW/2, GY+100, 10, '#555',    'center');
+  tx('最適値は見つけにくい。', RX+RW/2, GY+116, 10, '#555', 'center');
+
+  rr(RX, GY+148, RW, 128, 6, '#E8F5E9', '#2E7D32', 1.5);
+  tx('② 早期停止',                RX+RW/2, GY+168, 11, '#2E7D32', 'center', true);
+  tx('（Early Stopping）',        RX+RW/2, GY+184, 11, '#2E7D32', 'center', true);
+  tx('検証データの損失が',         RX+RW/2, GY+206, 10, '#555',    'center');
+  tx('N回連続で改善しなく',        RX+RW/2, GY+220, 10, '#555',    'center');
+  tx('なったら自動停止。',          RX+RW/2, GY+234, 10, '#555',    'center');
+  tx('実務での標準的な方法。',      RX+RW/2, GY+254, 10, '#E65100', 'center', true);
+
+  /* ── 下部まとめ ── */
+  var noteY = GY+GH+34;
+  rr(GX, noteY, W-GX-14, 50, 6, '#FFF9C4', '#F9A825', 1.5);
+  tx('木を増やすほど学習データの精度は上がり続けるが、増やしすぎると検証データの精度が下がり始める（過学習）。',
+    GX+10, noteY+16, 10.5, '#555', 'left');
+  tx('緑の縦線が「最適な木の本数」。ここを超えた右側が過学習ゾーン。',
+    GX+10, noteY+34, 10.5, '#555', 'left');
+
+})();
+</script>

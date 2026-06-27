@@ -1,0 +1,198 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>図3</title>
+<style>
+  body { margin:0; padding:16px; background:#fff;
+    font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif; }
+  .fig-caption { text-align:center; font-size:0.85em; color:#555; margin-top:6px; }
+</style>
+
+
+<div id="fig04_mount"></div>
+<p class="fig-caption">図3：最終モデルの動き——前の木の残差を次の木に渡しながら、予測値を少しずつ修正していく</p>
+
+<script>
+(function() {
+
+  var cv = document.createElement('canvas');
+  cv.width  = 760;
+  cv.height = 580;
+  cv.style.cssText = 'max-width:100%;display:block;margin:0 auto;';
+  document.getElementById('fig04_mount').appendChild(cv);
+
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+
+  function rr(x,y,w,h,r,fi,st,lw) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+    ctx.closePath();
+    if (fi) { ctx.fillStyle=fi; ctx.fill(); }
+    if (st) { ctx.strokeStyle=st; ctx.lineWidth=lw||1.5; ctx.stroke(); }
+  }
+  function ar(x1,y1,x2,y2,col,lw) {
+    col=col||'#555'; lw=lw||2;
+    ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    var a=Math.atan2(y2-y1,x2-x1), n=8;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-n*Math.cos(a-0.4), y2-n*Math.sin(a-0.4));
+    ctx.lineTo(x2-n*Math.cos(a+0.4), y2-n*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  function tx(s,x,y,sz,col,al,bold) {
+    ctx.font = (bold?'bold ':'')+sz+'px "Helvetica Neue",Arial,sans-serif';
+    ctx.fillStyle = col||'#333';
+    ctx.textAlign = al||'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(s,x,y);
+  }
+  function ln(x1,y1,x2,y2,col,lw,dash) {
+    ctx.strokeStyle=col||'#aaa'; ctx.lineWidth=lw||1;
+    ctx.setLineDash(dash||[]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* 小さな決定木を描く関数 */
+  function drawMiniTree(cx, ty, nc, lc, bd, leafVals) {
+    var NR=9, LW=26, LH=16, spread=26, depth=44;
+    /* 枝 */
+    ln(cx, ty+NR, cx-spread, ty+depth, bd, 1.2);
+    ln(cx, ty+NR, cx+spread, ty+depth, bd, 1.2);
+    /* 根ノード */
+    ctx.beginPath(); ctx.arc(cx, ty, NR, 0, Math.PI*2);
+    ctx.fillStyle=nc; ctx.fill();
+    ctx.strokeStyle=bd; ctx.lineWidth=1.5; ctx.stroke();
+    tx('条件', cx, ty, 8, '#fff', 'center', true);
+    /* 葉 */
+    rr(cx-spread-LW/2, ty+depth-LH/2, LW, LH, 3, lc, bd, 1);
+    tx(leafVals[0], cx-spread, ty+depth, 8, bd, 'center', true);
+    rr(cx+spread-LW/2, ty+depth-LH/2, LW, LH, 3, lc, bd, 1);
+    tx(leafVals[1], cx+spread, ty+depth, 8, bd, 'center', true);
+  }
+
+  ctx.clearRect(0,0,W,H);
+  rr(2,2,W-4,H-4,10,'#FAFAFA','#E0E0E0');
+
+  /* ── レイアウト：右下がりに配置 ── */
+  /* 各列の中心X・ボックス上端Y */
+  var BOX_W = 112, HDR_H = 22, BOX_H = 90;  /* BOX_Hは木の高さ込み */
+  var STEP_X = 138;   /* 列間の水平距離 */
+  var STEP_Y = 36;    /* 列間の垂直距離（右下がり） */
+  var START_X = 70;
+  var START_Y = 30;
+
+  var cols = [
+    { label:'初期予測',  sub:'全データ平均', pred:'8.0万円',   cum:'8.0万円',
+      bd:'#546E7A', bg:'#ECEFF1', hd:'#546E7A', nc:'#546E7A', lc:'#ECEFF1',
+      leaves:['8万', '8万'] },
+    { label:'木 1',      sub:'残差①を学習', pred:'+0.5万円',  cum:'9.0万円',
+      bd:'#1565C0', bg:'#E3F2FD', hd:'#1565C0', nc:'#1565C0', lc:'#BBDEFB',
+      leaves:['+1万', '-1万'] },
+    { label:'木 2',      sub:'残差②を学習', pred:'+0.25万円', cum:'9.5万円',
+      bd:'#6A1B9A', bg:'#F3E5F5', hd:'#6A1B9A', nc:'#6A1B9A', lc:'#E1BEE7',
+      leaves:['+0.5万', '-0.5万'] },
+    { label:'木 3',      sub:'残差③を学習', pred:'+0.13万円', cum:'9.75万円',
+      bd:'#E65100', bg:'#FFF3E0', hd:'#E65100', nc:'#E65100', lc:'#FFE0B2',
+      leaves:['+0.25万', '-0.25万'] },
+    { label:'木 N',      sub:'残差N-1を学習', pred:'+…',      cum:'≒10万円',
+      bd:'#2E7D32', bg:'#E8F5E9', hd:'#2E7D32', nc:'#2E7D32', lc:'#C8E6C9',
+      leaves:['…', '…'] }
+  ];
+
+  /* 各列の座標を計算 */
+  var i;
+  for (i=0; i<cols.length; i++) {
+    cols[i].cx = START_X + i * STEP_X + BOX_W/2;
+    cols[i].ty = START_Y + i * STEP_Y;
+  }
+
+  /* ── 木と木の間の矢印（矢印線のみ先に描く） ── */
+  var resLabels = ['残差①', '残差②', '残差③'];
+  for (i=0; i<4; i++) {
+    var c0 = cols[i], c1 = cols[i+1];
+    var x1 = c0.cx + BOX_W/2;
+    var y1 = c0.ty + HDR_H + BOX_H/2;
+    var x2 = c1.cx - BOX_W/2;
+    var y2 = c1.ty + HDR_H + BOX_H/2;
+    if (i < 3) {
+      ar(x1, y1, x2, y2, c0.bd, 2);
+    } else {
+      ctx.strokeStyle='#aaa'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.setLineDash([]);
+      tx('…', (x1+x2)/2, (y1+y2)/2, 13, '#aaa');
+    }
+  }
+
+  /* ── 各列を描画 ── */
+  cols.forEach(function(c) {
+    var bx = c.cx - BOX_W/2;
+
+    /* ヘッダー */
+    rr(bx, c.ty, BOX_W, HDR_H, 6, c.hd, c.hd);
+    tx(c.label, c.cx, c.ty+HDR_H/2, 12, '#fff', 'center', true);
+
+    /* 本体背景 */
+    rr(bx, c.ty+HDR_H, BOX_W, BOX_H, 0, c.bg, c.bd, 1.5);
+
+    /* サブラベル */
+    tx(c.sub, c.cx, c.ty+HDR_H+12, 10, c.bd);
+
+    /* 小さな木を描画 */
+    drawMiniTree(c.cx, c.ty+HDR_H+34, c.nc, c.lc, c.bd, c.leaves);
+
+    /* 物件Aへの出力 */
+    rr(bx+6, c.ty+HDR_H+BOX_H-22, BOX_W-12, 18, 3, '#fff', c.bd, 1);
+    tx('物件A: '+c.pred, c.cx, c.ty+HDR_H+BOX_H-13, 10, c.bd, 'center', true);
+  });
+
+  /* ── 黄色ラベルを最後に描いて前面に出す ── */
+  for (i=0; i<3; i++) {
+    var c0b = cols[i], c1b = cols[i+1];
+    var x1b = c0b.cx + BOX_W/2;
+    var y1b = c0b.ty + HDR_H + BOX_H/2;
+    var x2b = c1b.cx - BOX_W/2;
+    var y2b = c1b.ty + HDR_H + BOX_H/2;
+    var mxb = (x1b+x2b)/2, myb = (y1b+y2b)/2 - 14;
+    rr(mxb-28, myb-9, 56, 18, 4, '#FFF9C4', '#F9A825', 2);
+    tx(resLabels[i]+'を渡す', mxb, myb, 9, '#E65100', 'center', true);
+  }
+
+  /* ── 累積予測値（各列の下） ── */
+  var CUM_H = 36;
+  cols.forEach(function(c) {
+    var cy = c.ty + HDR_H + BOX_H + 14;
+    /* 下向き矢印 */
+    ar(c.cx, c.ty+HDR_H+BOX_H+1, c.cx, cy-2, '#aaa', 1.5);
+    rr(c.cx-BOX_W/2, cy, BOX_W, CUM_H, 6, '#fff', c.bd, 1.5);
+    tx('累積予測値', c.cx, cy+11, 10, '#888');
+    tx(c.cum, c.cx, cy+26, 12, c.bd, 'center', true);
+  });
+
+  /* ── 最終予測（木Nの下） ── */
+  var lastC = cols[4];
+  var finY  = lastC.ty + HDR_H + BOX_H + 14 + CUM_H + 20;
+  ar(lastC.cx, lastC.ty+HDR_H+BOX_H+14+CUM_H+1, lastC.cx, finY-2, '#2E7D32', 2);
+  rr(lastC.cx-60, finY, 120, 40, 8, '#E8F5E9', '#2E7D32', 2.5);
+  tx('最終予測値', lastC.cx, finY+12, 11, '#2E7D32');
+  tx('≒ 10万円', lastC.cx, finY+28, 14, '#2E7D32', 'center', true);
+
+  /* ── 加算式 ── */
+  var eqY = H - 58;
+  rr(10, eqY, W-20, 22, 4, '#fff', '#ccc', 1);
+  tx('最終予測値 ＝ 初期予測値 ＋ η×木1の出力 ＋ η×木2の出力 ＋ … ＋ η×木Nの出力',
+    W/2, eqY+11, 11, '#333');
+
+  /* ── 注釈 ── */
+  var noteY = H - 30;
+  tx('※ 各木は全データ（物件A〜E）の残差を使って分岐ルールを学習する。図中の数値は物件Aに適用したときの出力。',
+    W/2, noteY, 10, '#888');
+
+})();
+</script>

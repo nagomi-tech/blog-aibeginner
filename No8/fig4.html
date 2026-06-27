@@ -1,0 +1,106 @@
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>図4</title>
+<style>
+body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif;font-size:14px;}
+.fig-wrap{max-width:740px;margin:0 auto;}
+.fig-title{text-align:center;font-size:0.85em;color:#555;margin-top:8px;}
+.tbl{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.tbl th{padding:10px 8px;font-size:12px;font-weight:bold;text-align:center;border:1px solid #ddd;}
+.tbl td{padding:8px 10px;font-size:12px;border:1px solid #ddd;vertical-align:top;line-height:1.5;}
+.hd-item{background:#ECEFF1;font-weight:bold;color:#37474F;width:130px;text-align:left;}
+.ok{color:#2E7D32;}
+.ng{color:#B0BEC5;}
+.note{font-size:11px;padding:8px 12px;border-radius:4px;border:1px solid #F9A825;background:#FFF9C4;margin-top:4px;}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;color:#fff;margin-bottom:4px;}
+</style>
+
+
+<div class="fig-wrap">
+
+<p style="text-align:center;font-size:13px;font-weight:bold;margin:0 0 10px;color:#333;">
+  勾配ブースティング（GBM）→ XGBoost → LightGBM の進化
+</p>
+
+<!-- 継承の流れ -->
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:12px;">
+  <span style="background:#546E7A;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">GBM（1999年）</span>
+  <span style="color:#888;">── 継承＋改良 ──▶</span>
+  <span style="background:#1565C0;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">XGBoost（2014年）</span>
+  <span style="color:#888;">── 継承＋高速化 ──▶</span>
+  <span style="background:#2E7D32;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">LightGBM（2017年）</span>
+</div>
+
+<table class="tbl">
+  <thead>
+    <tr>
+      <th class="hd-item" style="background:#ECEFF1;color:#37474F;text-align:left;">比較項目</th>
+      <th style="background:#ECEFF1;color:#546E7A;width:180px;">GBM<br><small style="font-weight:normal;">Friedman / scikit-learn</small></th>
+      <th style="background:#E3F2FD;color:#1565C0;width:180px;">XGBoost<br><small style="font-weight:normal;">陳天奇 / 2014年</small></th>
+      <th style="background:#E8F5E9;color:#2E7D32;width:180px;">LightGBM<br><small style="font-weight:normal;">Microsoft / 2017年</small></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hd-item">木の成長方式</td>
+      <td style="background:#F5F5F5;">深さ優先<br>（Level-wise）</td>
+      <td style="background:#F8FBFF;">深さ優先<br>（Level-wise）</td>
+      <td style="background:#F9FBF9;"><strong style="color:#2E7D32;">葉優先<br>（Leaf-wise）</strong></td>
+    </tr>
+    <tr>
+      <td class="hd-item">正則化</td>
+      <td>✘ なし</td>
+      <td><span class="ok">✔ γ・λによる正則化</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">欠損値の自動処理</td>
+      <td><span class="ng">✘ 手動での前処理が必要</span></td>
+      <td><span class="ok">✔ 自動処理に対応</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">列・行サブサンプリング</td>
+      <td><span class="ng">✘ なし</span></td>
+      <td><span class="ok">✔ colsample_bytree<br>subsample</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">分岐探索の並列化</td>
+      <td><span class="ng">✘ なし</span></td>
+      <td><span class="ok">✔ CPUマルチコア対応</span></td>
+      <td><span class="ok">✔ 同上＋さらに高速化</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">GOSS<br><small>（残差小データを間引く）</small></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ok">✔ LightGBM独自技術</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">EFB<br><small>（排他的特徴量をまとめる）</small></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ok">✔ LightGBM独自技術</span></td>
+    </tr>
+    <tr>
+      <td class="hd-item">大規模・高次元データへの強さ</td>
+      <td>△ 低速</td>
+      <td>○ 実用水準</td>
+      <td><strong style="color:#2E7D32;">◎ 最も高速・省メモリ</strong></td>
+    </tr>
+    <tr>
+      <td class="hd-item">用途の目安</td>
+      <td style="background:#F5F5F5;color:#546E7A;">理論学習・小規模データ。実務ではXGBoost/LightGBMが主流</td>
+      <td style="background:#F8FBFF;color:#1565C0;">中〜大規模データに安定した選択。情報・事例が豊富</td>
+      <td style="background:#F9FBF9;color:#2E7D32;">大規模・高次元データ。学習速度を優先したい場合</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <strong>3つに共通する仕組み：</strong>
+  浅い決定木を直列に積み重ねる　／　残差（損失関数の勾配）を目的変数として学習する　／　学習率ηで少しずつ予測値を更新する
+</div>
+
+</div>
+<p class="fig-title">図4：GBM・XGBoost・LightGBMの進化と違い</p>
