@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図5：AlexNetの構造</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+  canvas { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="c" width="720" height="900"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const CX = 360; // 中央X
+const W_MAIN = 200; // メインブロック幅
+const W_SUB = 160;  // サブブロック幅
+const H = 44;       // ブロック高さ
+const GAP = 14;     // ブロック間隔
+const LX = CX - W_MAIN / 2; // 左端X
+
+// 色定義
+const COL = {
+  input:  { fill: '#e8f4fd', stroke: '#5b9bd5', text: '#1a4f7a' },
+  conv:   { fill: '#fff0e0', stroke: '#e67e22', text: '#7a3a00' },
+  relu:   { fill: '#fef9e0', stroke: '#f1c40f', text: '#7a6000' },
+  pool:   { fill: '#e8f8f0', stroke: '#27ae60', text: '#0a5c2e' },
+  fc:     { fill: '#f5e6ff', stroke: '#8e44ad', text: '#4a1a6a' },
+  output: { fill: '#fde8e8', stroke: '#e74c3c', text: '#7a1010' },
+};
+
+// レイヤー定義
+const layers = [
+  { label: '入力画像', sub: '224 × 224 × 3ch', type: 'input' },
+  { label: 'Conv1  +  ReLU', sub: '11×11, 96フィルター → 55×55×96', type: 'conv', note: '畳み込み+活性化' },
+  { label: 'MaxPool 1', sub: '3×3, stride 2 → 27×27×96', type: 'pool', note: 'プーリング' },
+  { label: 'Conv2  +  ReLU', sub: '5×5, 256フィルター → 27×27×256', type: 'conv', note: '畳み込み+活性化' },
+  { label: 'MaxPool 2', sub: '3×3, stride 2 → 13×13×256', type: 'pool', note: 'プーリング' },
+  { label: 'Conv3  +  ReLU', sub: '3×3, 384フィルター → 13×13×384', type: 'conv', note: '畳み込み+活性化', nopool: true },
+  { label: 'Conv4  +  ReLU', sub: '3×3, 384フィルター → 13×13×384', type: 'conv', note: '畳み込み+活性化', nopool: true },
+  { label: 'Conv5  +  ReLU', sub: '3×3, 256フィルター → 13×13×256', type: 'conv', note: '畳み込み+活性化' },
+  { label: 'MaxPool 3', sub: '3×3, stride 2 → 6×6×256', type: 'pool', note: 'プーリング' },
+  { label: 'Flatten（平坦化）', sub: '6×6×256 = 9,216個のベクトルに', type: 'fc' },
+  { label: '全結合層 1  +  ReLU', sub: '4,096ニューロン', type: 'fc' },
+  { label: '全結合層 2  +  ReLU', sub: '4,096ニューロン', type: 'fc' },
+  { label: '全結合層 3  +  Softmax', sub: '1,000ニューロン（クラス数）', type: 'fc' },
+  { label: '出力', sub: '1,000クラスの確率分布', type: 'output' },
+];
+
+function roundRect(x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawArrow(x, y1, y2, dashed) {
+  ctx.strokeStyle = '#aaa';
+  ctx.lineWidth = 1.5;
+  if (dashed) ctx.setLineDash([4, 3]);
+  else ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(x, y1);
+  ctx.lineTo(x, y2 - 8);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // 矢印先端
+  ctx.fillStyle = '#aaa';
+  ctx.beginPath();
+  ctx.moveTo(x, y2);
+  ctx.lineTo(x - 5, y2 - 9);
+  ctx.lineTo(x + 5, y2 - 9);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // タイトル
+  ctx.fillStyle = '#222';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('AlexNet の構造（5つの畳み込み層 + 3つの全結合層）', CX, 28);
+
+  // 凡例
+  const legY = 46;
+  const legItems = [
+    { label: '畳み込み + ReLU', col: COL.conv },
+    { label: 'プーリング', col: COL.pool },
+    { label: '全結合層', col: COL.fc },
+  ];
+  let legX = 80;
+  legItems.forEach(item => {
+    roundRect(legX, legY, 14, 14, 3, item.col.fill, item.col.stroke);
+    ctx.fillStyle = '#444';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(item.label, legX + 18, legY + 11);
+    legX += 140;
+  });
+
+  // 「プーリングなし」の注記用の右側ライン位置
+  const noteX = CX + W_MAIN / 2 + 16;
+
+  let y = 72;
+  const blockYs = []; // 各ブロックの中心Y
+
+  layers.forEach((layer, i) => {
+    const col = COL[layer.type];
+    const bx = CX - W_MAIN / 2;
+
+    // 矢印（最初以外）
+    if (i > 0) {
+      drawArrow(CX, y, y + GAP);
+      y += GAP;
+    }
+
+    // ブロック
+    roundRect(bx, y, W_MAIN, H, 6, col.fill, col.stroke);
+
+    // ラベル
+    ctx.fillStyle = col.text;
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(layer.label, CX, y + 16);
+
+    // サブラベル
+    ctx.fillStyle = '#666';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(layer.sub, CX, y + 32);
+
+    blockYs.push({ y, cy: y + H / 2, layer });
+
+    // 「プーリングなし」の注記
+    if (layer.nopool) {
+      ctx.strokeStyle = '#e67e22';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(bx + W_MAIN, y + H / 2);
+      ctx.lineTo(noteX + 60, y + H / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#e67e22';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('← プーリングなし', noteX, y + H / 2 + 4);
+    }
+
+    y += H;
+  });
+
+  // 右側に畳み込み層の番号ラベル
+  const convLayers = blockYs.filter(b => b.layer.type === 'conv');
+  convLayers.forEach((b, i) => {
+    ctx.fillStyle = '#e67e22';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Conv${i+1}`, CX - W_MAIN / 2 - 6, b.cy + 4);
+  });
+
+  // 左側に「畳み込み部」「全結合部」の括弧ラベル
+  const firstConv = blockYs.find(b => b.layer.type === 'conv');
+  const lastPool = [...blockYs].reverse().find(b => b.layer.type === 'pool');
+  const firstFC = blockYs.find(b => b.layer.type === 'fc');
+  const lastFC = [...blockYs].reverse().find(b => b.layer.type === 'fc');
+
+  // 左側括弧
+  const bracketX = 28;
+  function drawBracket(y1, y2, label, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bracketX + 8, y1);
+    ctx.lineTo(bracketX, y1);
+    ctx.lineTo(bracketX, y2);
+    ctx.lineTo(bracketX + 8, y2);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.save();
+    ctx.translate(bracketX - 10, (y1 + y2) / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
+
+  if (firstConv && lastPool) {
+    drawBracket(firstConv.y, lastPool.y + H, '特徴抽出部', '#e67e22');
+  }
+  if (firstFC && lastFC) {
+    drawBracket(firstFC.y, lastFC.y + H, '分類部', '#8e44ad');
+  }
+}
+
+draw();
+</script>
+</body>
+</html>
