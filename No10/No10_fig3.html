@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図3：Max Pooling</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+  canvas { display: block; }
+  #ctrl { text-align: center; margin-top: 6px; }
+  button {
+    padding: 6px 22px; font-size: 14px; cursor: pointer;
+    background: #3a7bd5; color: #fff; border: none; border-radius: 4px; margin: 0 4px;
+  }
+  button:hover { background: #2a5bb5; }
+  #msg { font-size: 12px; color: #555; margin-top: 6px; min-height: 18px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="720" height="360"></canvas>
+<div id="ctrl">
+  <button id="btnPlay">▶ 再生</button>
+  <button id="btnReset">↺ リセット</button>
+  <div id="msg"></div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const msg = document.getElementById('msg');
+
+// 4x4 特徴マップ
+const feat = [
+  [180,  40,  60, 200],
+  [ 30, 220,  50,  20],
+  [150,  10, 190,  80],
+  [ 20,  70,  30, 210],
+];
+const IN = 4, OUT = 2;
+
+// Max Pooling結果（2x2）
+const pooled = [];
+for (let r = 0; r < OUT; r++) {
+  pooled[r] = [];
+  for (let c = 0; c < OUT; c++) {
+    pooled[r][c] = Math.max(
+      feat[r*2][c*2], feat[r*2][c*2+1],
+      feat[r*2+1][c*2], feat[r*2+1][c*2+1]
+    );
+  }
+}
+
+const cell = 70;
+const inX = 50, inY = 70;
+const outX = inX + IN * cell + 140, outY = inY + IN/2 * cell - OUT * cell / 2 + OUT * cell / 4 - 10;
+
+let step = -1;
+let playing = false;
+let animId = null;
+
+function valColor(v) {
+  const c = Math.round(v);
+  return `rgb(${c},${c},${c})`;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const pos = step >= 0 ? { r: Math.floor(step / OUT), c: step % OUT } : null;
+
+  // タイトル
+  ctx.fillStyle = '#222';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('特徴マップ（4×4）', inX, inY - 18);
+  ctx.fillText('プーリング後（2×2）', outX, outY - 18);
+
+  // 入力特徴マップ
+  for (let r = 0; r < IN; r++) {
+    for (let c = 0; c < IN; c++) {
+      const v = feat[r][c];
+      // 現在の2x2ブロックをハイライト
+      const br = pos ? pos.r : -1, bc = pos ? pos.c : -1;
+      const inBlock = pos && Math.floor(r / 2) === br && Math.floor(c / 2) === bc;
+      // 最大値かどうか
+      const isMax = pos && inBlock && v === pooled[br][bc];
+
+      ctx.fillStyle = valColor(v);
+      ctx.fillRect(inX + c * cell, inY + r * cell, cell - 1, cell - 1);
+
+      if (inBlock) {
+        ctx.fillStyle = isMax ? 'rgba(255,180,0,0.45)' : 'rgba(100,160,255,0.25)';
+        ctx.fillRect(inX + c * cell, inY + r * cell, cell - 1, cell - 1);
+      }
+      ctx.strokeStyle = inBlock ? '#f90' : '#bbb';
+      ctx.lineWidth = inBlock ? 2 : 0.5;
+      ctx.strokeRect(inX + c * cell, inY + r * cell, cell - 1, cell - 1);
+
+      ctx.fillStyle = v > 128 ? '#fff' : '#333';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(v, inX + c * cell + cell/2, inY + r * cell + cell/2 + 6);
+
+      if (isMax) {
+        // 王冠マーク代わりに★
+        ctx.fillStyle = '#f90';
+        ctx.font = '13px sans-serif';
+        ctx.fillText('★', inX + c * cell + cell/2 + 16, inY + r * cell + 16);
+      }
+    }
+  }
+
+  // 2x2 ブロック境界線
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,3]);
+  ctx.beginPath();
+  ctx.moveTo(inX + 2 * cell - 0.5, inY); ctx.lineTo(inX + 2 * cell - 0.5, inY + IN * cell - 1);
+  ctx.moveTo(inX, inY + 2 * cell - 0.5); ctx.lineTo(inX + IN * cell - 1, inY + 2 * cell - 0.5);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 矢印
+  const ax1 = inX + IN * cell + 14;
+  const ax2 = outX - 14;
+  const ay = inY + IN * cell / 2;
+  ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ax1, ay); ctx.lineTo(ax2, ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ax2,ay); ctx.lineTo(ax2-10,ay-5); ctx.lineTo(ax2-10,ay+5); ctx.closePath();
+  ctx.fillStyle='#555'; ctx.fill();
+  ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#555';
+  ctx.fillText('Max Pooling', (ax1+ax2)/2, ay - 12);
+  ctx.fillText('（2×2 → 最大値）', (ax1+ax2)/2, ay + 2);
+
+  // プーリング後
+  const outCell = 80;
+  const outOffX = outX + 10, outOffY = outY + 20;
+  for (let r = 0; r < OUT; r++) {
+    for (let c = 0; c < OUT; c++) {
+      const filled = step >= 0 && r * OUT + c <= step;
+      const isCurrent = pos && r === pos.r && c === pos.c;
+      ctx.fillStyle = filled ? valColor(pooled[r][c]) : '#f0f0f0';
+      ctx.fillRect(outOffX + c * outCell, outOffY + r * outCell, outCell - 1, outCell - 1);
+      ctx.strokeStyle = isCurrent ? '#f90' : '#bbb';
+      ctx.lineWidth = isCurrent ? 2.5 : 0.5;
+      ctx.strokeRect(outOffX + c * outCell, outOffY + r * outCell, outCell - 1, outCell - 1);
+      if (filled) {
+        const v = pooled[r][c];
+        ctx.fillStyle = v > 128 ? '#fff' : '#333';
+        ctx.font = 'bold 18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(v, outOffX + c * outCell + outCell/2, outOffY + r * outCell + outCell/2 + 7);
+      }
+    }
+  }
+
+  // 説明
+  if (step === -1) {
+    msg.textContent = '▶ 再生 を押すと、2×2のブロックから最大値を取り出す様子が確認できます';
+  } else if (pos) {
+    const cands = [feat[pos.r*2][pos.c*2], feat[pos.r*2][pos.c*2+1], feat[pos.r*2+1][pos.c*2], feat[pos.r*2+1][pos.c*2+1]];
+    msg.textContent = `ブロック（${pos.r},${pos.c}）の値：${cands.join('、')} → 最大値は ${pooled[pos.r][pos.c]}（★）`;
+  } else {
+    msg.textContent = '完成！サイズが半分になり、特徴の「だいたいの位置」が保たれています';
+  }
+}
+
+function nextStep() {
+  step++;
+  draw();
+  if (step >= OUT * OUT - 1) {
+    playing = false;
+    document.getElementById('btnPlay').textContent = '▶ 再生';
+    return;
+  }
+  if (playing) animId = setTimeout(nextStep, 900);
+}
+
+document.getElementById('btnPlay').addEventListener('click', () => {
+  if (playing) {
+    playing = false; clearTimeout(animId);
+    document.getElementById('btnPlay').textContent = '▶ 再生';
+  } else {
+    if (step >= OUT * OUT - 1) step = -1;
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 一時停止';
+    nextStep();
+  }
+});
+document.getElementById('btnReset').addEventListener('click', () => {
+  playing = false; clearTimeout(animId); step = -1;
+  document.getElementById('btnPlay').textContent = '▶ 再生';
+  draw();
+});
+
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図4：CNN全体構造</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="720" height="380"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// ブロック定義
+const blocks = [
+  { label: '入力\n画像', sub: '（224×224\n×3ch）', color: '#e8f4fd', border: '#5b9bd5', x: 20, w: 72 },
+  { label: '畳み込み\n+ ReLU', sub: '特徴マップ\n生成', color: '#fff0e0', border: '#e67e22', x: 120, w: 86 },
+  { label: 'Max\nPooling', sub: 'サイズ\n縮小', color: '#fef9e0', border: '#f1c40f', x: 228, w: 80 },
+  { label: '畳み込み\n+ ReLU', sub: 'より深い\n特徴抽出', color: '#fff0e0', border: '#e67e22', x: 330, w: 86 },
+  { label: 'Max\nPooling', sub: 'さらに\n縮小', color: '#fef9e0', border: '#f1c40f', x: 438, w: 80 },
+  { label: 'Flatten\n（平坦化）', sub: '1列に\n並べる', color: '#f0ffe0', border: '#27ae60', x: 534, w: 80 },
+  { label: '全結合層\n+ Softmax', sub: 'クラス\n分類', color: '#f5e6ff', border: '#8e44ad', x: 630, w: 80 },
+];
+
+const blockH = 90;
+const blockY = 90;
+const arrowY = blockY + blockH / 2;
+
+function wrapText(ctx2, text, x, y, lineH) {
+  const lines = text.split('\n');
+  const total = lines.length * lineH;
+  let startY = y - total / 2 + lineH / 2;
+  lines.forEach(line => {
+    ctx2.fillText(line, x, startY);
+    startY += lineH;
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // タイトル
+  ctx.fillStyle = '#222';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('CNNの全体構造', canvas.width / 2, 34);
+
+  // ブロック描画
+  blocks.forEach((b, i) => {
+    // 影
+    ctx.fillStyle = 'rgba(0,0,0,0.07)';
+    ctx.fillRect(b.x + 3, blockY + 3, b.w, blockH);
+    // 本体
+    ctx.fillStyle = b.color;
+    ctx.strokeStyle = b.border;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(b.x, blockY, b.w, blockH, 8);
+    ctx.fill(); ctx.stroke();
+    // ラベル
+    ctx.fillStyle = '#222';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    wrapText(ctx, b.label, b.x + b.w / 2, blockY + 30, 17);
+    // サブ
+    ctx.fillStyle = '#666';
+    ctx.font = '10px sans-serif';
+    wrapText(ctx, b.sub, b.x + b.w / 2, blockY + 68, 14);
+
+    // 矢印
+    if (i < blocks.length - 1) {
+      const nx = blocks[i+1];
+      const ax1 = b.x + b.w + 2;
+      const ax2 = nx.x - 2;
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(ax1, arrowY); ctx.lineTo(ax2, arrowY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ax2,arrowY); ctx.lineTo(ax2-8,arrowY-4); ctx.lineTo(ax2-8,arrowY+4); ctx.closePath();
+      ctx.fillStyle='#888'; ctx.fill();
+    }
+  });
+
+  // 「繰り返す」ブレース
+  const b1 = blocks[1], b4 = blocks[4];
+  const bx1 = b1.x - 4, bx2 = b4.x + b4.w + 4;
+  const by = blockY + blockH + 18;
+  ctx.strokeStyle = '#e67e22';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  ctx.moveTo(bx1, blockY - 10);
+  ctx.lineTo(bx1, by);
+  ctx.lineTo(bx2, by);
+  ctx.lineTo(bx2, blockY - 10);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#e67e22';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('この組み合わせを何段も繰り返す', (bx1+bx2)/2, by + 14);
+
+  // 出力ラベル
+  const outBlock = blocks[blocks.length - 1];
+  const outX = outBlock.x + outBlock.w + 18;
+  const labels = ['猫 87%','犬 10%','鳥  3%'];
+  const labelColors = ['#8e44ad', '#aaa', '#ccc'];
+  labels.forEach((lbl, i) => {
+    const ly = arrowY - 22 + i * 22;
+    ctx.fillStyle = labelColors[i];
+    ctx.font = i === 0 ? 'bold 12px sans-serif' : '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(lbl, outX, ly);
+  });
+
+  // 説明テキスト（下段）
+  const noteY = blockY + blockH + 52;
+  ctx.fillStyle = '#444';
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'left';
+  const notes = [
+    '・入力画像は数値の集まりとして受け取る',
+    '・畳み込み＋ReLUで局所的な特徴（エッジ・テクスチャ・形状）を抽出',
+    '・Max Poolingでサイズを縮小し、位置のずれに強くする',
+    '・Flattenで1列に並べ、全結合層で最終的な分類を行う',
+  ];
+  notes.forEach((n, i) => ctx.fillText(n, 24, noteY + i * 18));
+}
+
+draw();
+</script>
+</body>
+</html>

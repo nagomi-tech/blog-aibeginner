@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図1：画像と数値</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="720" height="400"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// --- データ定義 ---
+// 簡単な手書き「7」もどきの8x8グレースケール値（0〜255）
+const grid = [
+  [240, 245, 248, 250, 248, 242, 200, 110],
+  [ 60,  50,  40,  35,  42, 180, 240,  90],
+  [ 30,  28,  25,  22,  80, 230, 130,  20],
+  [ 20,  18,  16,  40, 200, 160,  25,  10],
+  [ 15,  14,  18, 160, 210,  30,  10,   8],
+  [ 12,  14, 120, 220,  50,  10,   8,   6],
+  [ 10, 100, 220,  80,  12,   8,   6,   5],
+  [ 80, 200,  90,  14,   8,   6,   5,   4],
+];
+const ROWS = 8, COLS = 8;
+
+// --- レイアウト ---
+const leftX = 60, topY = 60;
+const cellSize = 36;
+const gap = 80;
+const rightX = leftX + COLS * cellSize + gap;
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // タイトル
+  ctx.fillStyle = '#222';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('コンピュータが見ている「画像」', leftX + COLS * cellSize / 2, 38);
+  ctx.fillText('コンピュータが受け取っている「数値」', rightX + COLS * cellSize / 2, 38);
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const val = grid[r][c];
+      const x = leftX + c * cellSize;
+      const y = topY + r * cellSize;
+
+      // 左：グレースケール画像
+      ctx.fillStyle = `rgb(${val},${val},${val})`;
+      ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+
+      // 右：数値テーブル
+      const rx = rightX + c * cellSize;
+      const ry = topY + r * cellSize;
+      ctx.fillStyle = '#f5f7fa';
+      ctx.fillRect(rx, ry, cellSize - 1, cellSize - 1);
+      ctx.strokeStyle = '#ccd';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(rx, ry, cellSize - 1, cellSize - 1);
+
+      // 数値テキスト色：値が小さい（暗い）ほど青っぽく
+      const ratio = val / 255;
+      const r2 = Math.round(30 + ratio * 180);
+      const g2 = Math.round(30 + ratio * 60);
+      const b2 = Math.round(200 - ratio * 160);
+      ctx.fillStyle = `rgb(${r2},${g2},${b2})`;
+      ctx.font = `${cellSize > 32 ? 10 : 9}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(val, rx + cellSize / 2, ry + cellSize / 2 + 4);
+    }
+  }
+
+  // 矢印
+  const arrY = topY + (ROWS * cellSize) / 2;
+  const arrX1 = leftX + COLS * cellSize + 12;
+  const arrX2 = rightX - 12;
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(arrX1, arrY);
+  ctx.lineTo(arrX2, arrY);
+  ctx.stroke();
+  // 矢印先端
+  ctx.beginPath();
+  ctx.moveTo(arrX2, arrY);
+  ctx.lineTo(arrX2 - 10, arrY - 5);
+  ctx.lineTo(arrX2 - 10, arrY + 5);
+  ctx.closePath();
+  ctx.fillStyle = '#555';
+  ctx.fill();
+
+  // 矢印ラベル
+  ctx.fillStyle = '#555';
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('数値化', (arrX1 + arrX2) / 2, arrY - 10);
+
+  // 凡例
+  const legY = topY + ROWS * cellSize + 28;
+  ctx.textAlign = 'left';
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.fillText('各マスの数値：0（黒）〜 255（白）', leftX, legY);
+  ctx.fillText('カラー写真の場合：赤・緑・青（RGB）の3枚の表が重なる', leftX, legY + 20);
+}
+
+draw();
+</script>
+</body>
+</html>

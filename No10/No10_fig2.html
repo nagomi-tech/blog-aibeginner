@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>図2：畳み込み演算</title>
+<style>
+  body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+  canvas { display: block; }
+  #ctrl { text-align: center; margin-top: 8px; }
+  button {
+    padding: 6px 22px; font-size: 14px; cursor: pointer;
+    background: #3a7bd5; color: #fff; border: none; border-radius: 4px; margin: 0 4px;
+  }
+  button:hover { background: #2a5bb5; }
+  #msg { font-size: 12px; color: #555; margin-top: 6px; min-height: 18px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="720" height="360"></canvas>
+<div id="ctrl">
+  <button id="btnPlay">▶ 再生</button>
+  <button id="btnReset">↺ リセット</button>
+  <div id="msg"></div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const msg = document.getElementById('msg');
+
+// 6x6 入力画像（縦エッジがある簡単なパターン）
+const input = [
+  [ 10, 10,200,200, 10, 10],
+  [ 10, 10,210,205, 10, 10],
+  [ 10, 10,195,210, 10, 10],
+  [ 10, 10,205,200, 10, 10],
+  [ 10, 10,200,195, 10, 10],
+  [ 10, 10,210,200, 10, 10],
+];
+// 縦エッジ検出フィルター（Sobelっぽい）
+const filter = [
+  [-1, 0, 1],
+  [-2, 0, 2],
+  [-1, 0, 1],
+];
+const IN = 6, F = 3, OUT = 4;
+
+// 出力特徴マップを事前計算
+const outMap = [];
+for (let r = 0; r < OUT; r++) {
+  outMap[r] = [];
+  for (let c = 0; c < OUT; c++) {
+    let sum = 0;
+    for (let fr = 0; fr < F; fr++)
+      for (let fc = 0; fc < F; fc++)
+        sum += input[r+fr][c+fc] * filter[fr][fc];
+    outMap[r][c] = Math.min(255, Math.max(0, Math.abs(sum / 4)));
+  }
+}
+
+// レイアウト
+const cell = 44;
+const inX = 30, inY = 60;
+const filtX = inX + IN * cell + 50, filtY = inY + 40;
+const arrowX = filtX + F * cell + 40;
+const outX = arrowX + 30, outY = inY + 20;
+
+let step = -1; // -1: 待機
+let animId = null;
+let playing = false;
+
+function cellColor(v) {
+  const c = Math.round(v);
+  return `rgb(${c},${c},${c})`;
+}
+function filterColor(v) {
+  if (v > 0) return `rgba(220,60,60,${Math.abs(v)/2 * 0.8 + 0.2})`;
+  if (v < 0) return `rgba(60,100,220,${Math.abs(v)/2 * 0.8 + 0.2})`;
+  return '#eee';
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const pos = step >= 0 ? { r: Math.floor(step / OUT), c: step % OUT } : null;
+
+  // --- タイトル ---
+  ctx.fillStyle = '#222';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('入力画像（6×6）', inX, inY - 14);
+  ctx.fillText('フィルター（3×3）', filtX, filtY - 14);
+  ctx.fillText('特徴マップ（4×4）', outX, outY - 14);
+
+  // --- 入力画像 ---
+  for (let r = 0; r < IN; r++) {
+    for (let c = 0; c < IN; c++) {
+      const v = input[r][c];
+      ctx.fillStyle = cellColor(v);
+      ctx.fillRect(inX + c * cell, inY + r * cell, cell - 1, cell - 1);
+    }
+  }
+  // フィルター位置ハイライト
+  if (pos) {
+    ctx.strokeStyle = '#f90';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(inX + pos.c * cell, inY + pos.r * cell, F * cell - 1, F * cell - 1);
+  }
+
+  // --- フィルター ---
+  const fLabels = ['-1','0','+1','-2','0','+2','-1','0','+1'];
+  let fi = 0;
+  for (let r = 0; r < F; r++) {
+    for (let c = 0; c < F; c++) {
+      ctx.fillStyle = filterColor(filter[r][c]);
+      ctx.fillRect(filtX + c * cell, filtY + r * cell, cell - 1, cell - 1);
+      ctx.strokeStyle = '#bbb';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(filtX + c * cell, filtY + r * cell, cell - 1, cell - 1);
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(fLabels[fi++], filtX + c * cell + cell/2, filtY + r * cell + cell/2 + 5);
+    }
+  }
+
+  // --- 矢印 ---
+  const ax1 = filtX + F * cell + 10;
+  const ax2 = outX - 10;
+  const ay = outY + OUT * cell / 2;
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ax1, ay); ctx.lineTo(ax2, ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ax2, ay); ctx.lineTo(ax2-10, ay-5); ctx.lineTo(ax2-10, ay+5); ctx.closePath();
+  ctx.fillStyle = '#555'; ctx.fill();
+  ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#555';
+  ctx.fillText('掛け合わせて', (ax1+ax2)/2, ay - 14);
+  ctx.fillText('合計する', (ax1+ax2)/2, ay - 0);
+
+  // --- 出力特徴マップ ---
+  const outCell = 54;
+  for (let r = 0; r < OUT; r++) {
+    for (let c = 0; c < OUT; c++) {
+      const filled = step >= 0 && (r * OUT + c) <= step;
+      const isCurrent = pos && r === pos.r && c === pos.c;
+      if (filled) {
+        const v = outMap[r][c];
+        ctx.fillStyle = cellColor(v);
+      } else {
+        ctx.fillStyle = '#f0f0f0';
+      }
+      ctx.fillRect(outX + c * outCell, outY + r * outCell, outCell - 1, outCell - 1);
+      ctx.strokeStyle = isCurrent ? '#f90' : '#bbb';
+      ctx.lineWidth = isCurrent ? 2.5 : 0.5;
+      ctx.strokeRect(outX + c * outCell, outY + r * outCell, outCell - 1, outCell - 1);
+      if (filled) {
+        ctx.fillStyle = outMap[r][c] > 128 ? '#fff' : '#333';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(Math.round(outMap[r][c]), outX + c * outCell + outCell/2, outY + r * outCell + outCell/2 + 5);
+      }
+    }
+  }
+
+  // --- 説明文 ---
+  if (pos) {
+    const computedVal = Math.round(outMap[pos.r][pos.c]);
+    msg.textContent = `位置（${pos.r},${pos.c}）: フィルターを重ねて掛け算・合計 → 特徴マップの値 = ${computedVal}`;
+  } else if (step === -1) {
+    msg.textContent = '▶ 再生 ボタンを押すと、フィルターが画像をスキャンします';
+  } else {
+    msg.textContent = '完成！フィルターが反応した場所ほど明るい値になります';
+  }
+}
+
+function nextStep() {
+  step++;
+  draw();
+  if (step >= OUT * OUT - 1) {
+    playing = false;
+    document.getElementById('btnPlay').textContent = '▶ 再生';
+    return;
+  }
+  if (playing) animId = setTimeout(nextStep, 500);
+}
+
+document.getElementById('btnPlay').addEventListener('click', () => {
+  if (playing) {
+    playing = false;
+    clearTimeout(animId);
+    document.getElementById('btnPlay').textContent = '▶ 再生';
+  } else {
+    if (step >= OUT * OUT - 1) { step = -1; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 一時停止';
+    nextStep();
+  }
+});
+document.getElementById('btnReset').addEventListener('click', () => {
+  playing = false;
+  clearTimeout(animId);
+  step = -1;
+  document.getElementById('btnPlay').textContent = '▶ 再生';
+  draw();
+});
+
+draw();
+</script>
+</body>
+</html>
