@@ -1,0 +1,72 @@
+<svg width="100%" viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>RNNのループ構造と、それを時間方向に展開した図</title>
+<desc>左側は、RNNが自分自身の出力を次の入力として受け取るループ構造を1つのブロックで示したもの。右側は、そのループを時間方向に引き伸ばして展開した図で、同じ重みを持つRNNのブロックが時刻1、2、3と繰り返し並び、隠れ状態が矢印でつながっている。同じ計算が時間方向に何度も繰り返されていることを表す。</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<style>
+text { font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; }
+.th { font-size: 14px; font-weight: 500; fill: #0C447C; }
+.ts { font-size: 12px; fill: #5F5E5A; }
+.ts-blue { font-size: 12px; fill: #0C447C; }
+.box-blue { fill: #E6F1FB; stroke: #378ADD; }
+</style>
+
+<text class="th" x="110" y="36" text-anchor="middle" fill="#2C2C2A">ループ構造</text>
+<g class="box-blue">
+<rect x="60" y="120" width="100" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="110" y="142" text-anchor="middle" dominant-baseline="central">RNN</text>
+<text class="ts-blue" x="110" y="160" text-anchor="middle" dominant-baseline="central">同じ重み</text>
+</g>
+<path d="M160 132 L200 132 L200 90 L80 90 L80 118" fill="none" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="140" y="80" text-anchor="middle">隠れ状態を自分に戻す</text>
+
+<line x1="10" y1="148" x2="55" y2="148" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="30" y="200" text-anchor="middle">入力</text>
+<line x1="165" y1="148" x2="210" y2="148" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="210" y="200" text-anchor="middle">出力</text>
+
+<line x1="240" y1="60" x2="240" y2="260" stroke="#D3D1C7" stroke-width="0.5"/>
+
+<text class="th" x="430" y="36" text-anchor="middle" fill="#2C2C2A">時間方向に展開した図</text>
+
+<g class="box-blue">
+<rect x="280" y="120" width="80" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="320" y="142" text-anchor="middle" dominant-baseline="central">RNN</text>
+<text class="ts-blue" x="320" y="160" text-anchor="middle" dominant-baseline="central">時刻1</text>
+</g>
+<g class="box-blue">
+<rect x="396" y="120" width="80" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="436" y="142" text-anchor="middle" dominant-baseline="central">RNN</text>
+<text class="ts-blue" x="436" y="160" text-anchor="middle" dominant-baseline="central">時刻2</text>
+</g>
+<g class="box-blue">
+<rect x="512" y="120" width="80" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="552" y="142" text-anchor="middle" dominant-baseline="central">RNN</text>
+<text class="ts-blue" x="552" y="160" text-anchor="middle" dominant-baseline="central">時刻3</text>
+</g>
+
+<line x1="320" y1="80" x2="320" y2="118" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="436" y1="80" x2="436" y2="118" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="552" y1="80" x2="552" y2="118" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="320" y="68" text-anchor="middle">入力</text>
+<text class="ts" x="436" y="68" text-anchor="middle">入力</text>
+<text class="ts" x="552" y="68" text-anchor="middle">入力</text>
+
+<line x1="360" y1="148" x2="394" y2="148" stroke="#185FA5" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="476" y1="148" x2="510" y2="148" stroke="#185FA5" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="377" y="198" text-anchor="middle">隠れ</text>
+<text class="ts" x="377" y="210" text-anchor="middle">状態</text>
+<text class="ts" x="493" y="198" text-anchor="middle">隠れ</text>
+<text class="ts" x="493" y="210" text-anchor="middle">状態</text>
+
+<line x1="320" y1="176" x2="320" y2="230" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="436" y1="176" x2="436" y2="230" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<line x1="552" y1="176" x2="552" y2="230" stroke="#444441" stroke-width="1" marker-end="url(#arrow)"/>
+<text class="ts" x="320" y="244" text-anchor="middle">出力</text>
+<text class="ts" x="436" y="244" text-anchor="middle">出力</text>
+<text class="ts" x="552" y="244" text-anchor="middle">出力</text>
+
+<text class="ts" x="430" y="280" text-anchor="middle">同じ重みを持つRNNが時間方向に連なっている</text>
+</svg>
