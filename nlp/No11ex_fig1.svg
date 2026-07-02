@@ -1,0 +1,99 @@
+<svg viewBox="0 0 680 360" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif">
+
+  <rect width="680" height="360" fill="#fafafa" rx="8"/>
+
+  <!-- タイトル -->
+  <text x="340" y="34" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">形態素解析の処理イメージ</text>
+
+  <!-- 入力文 -->
+  <rect x="180" y="55" width="320" height="44" rx="8" fill="#fff9e6" stroke="#e6a817" stroke-width="2"/>
+  <text x="340" y="83" text-anchor="middle" font-size="17" font-weight="bold" fill="#9a6800">すもももももももものうち</text>
+
+  <!-- 矢印 下向き -->
+  <line x1="340" y1="99" x2="340" y2="122" stroke="#888" stroke-width="2" marker-end="url(#arrDown)"/>
+  <rect x="238" y="104" width="164" height="22" rx="4" fill="#eee" stroke="#bbb" stroke-width="1"/>
+  <text x="320" y="119" text-anchor="middle" font-size="11" fill="#666">形態素解析（MeCab など）</text>
+
+  <!-- 分割後の形態素ボックス -->
+  <!-- すもも -->
+  <rect x="30" y="140" width="80" height="54" rx="7" fill="#e8f4fd" stroke="#4a90d9" stroke-width="1.5"/>
+  <text x="70" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a5fa8">すもも</text>
+  <text x="70" y="182" text-anchor="middle" font-size="10" fill="#4a90d9">名詞</text>
+
+  <!-- も -->
+  <rect x="124" y="140" width="48" height="54" rx="7" fill="#f0fff0" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="148" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#2e7d32">も</text>
+  <text x="148" y="182" text-anchor="middle" font-size="10" fill="#4caf50">助詞</text>
+
+  <!-- もも -->
+  <rect x="184" y="140" width="72" height="54" rx="7" fill="#e8f4fd" stroke="#4a90d9" stroke-width="1.5"/>
+  <text x="220" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a5fa8">もも</text>
+  <text x="220" y="182" text-anchor="middle" font-size="10" fill="#4a90d9">名詞</text>
+
+  <!-- も -->
+  <rect x="268" y="140" width="48" height="54" rx="7" fill="#f0fff0" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="292" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#2e7d32">も</text>
+  <text x="292" y="182" text-anchor="middle" font-size="10" fill="#4caf50">助詞</text>
+
+  <!-- もも -->
+  <rect x="328" y="140" width="72" height="54" rx="7" fill="#e8f4fd" stroke="#4a90d9" stroke-width="1.5"/>
+  <text x="364" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a5fa8">もも</text>
+  <text x="364" y="182" text-anchor="middle" font-size="10" fill="#4a90d9">名詞</text>
+
+  <!-- の -->
+  <rect x="412" y="140" width="48" height="54" rx="7" fill="#f0fff0" stroke="#4caf50" stroke-width="1.5"/>
+  <text x="436" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#2e7d32">の</text>
+  <text x="436" y="182" text-anchor="middle" font-size="10" fill="#4caf50">助詞</text>
+
+  <!-- うち -->
+  <rect x="472" y="140" width="64" height="54" rx="7" fill="#fff3f3" stroke="#e57373" stroke-width="1.5"/>
+  <text x="504" y="163" text-anchor="middle" font-size="15" font-weight="bold" fill="#c62828">うち</text>
+  <text x="504" y="182" text-anchor="middle" font-size="10" fill="#e57373">名詞</text>
+
+  <!-- 接続線（入力→各形態素） -->
+  <line x1="340" y1="133" x2="70"  y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="148" y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="220" y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="292" y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="364" y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="436" y2="140" stroke="#ccc" stroke-width="1"/>
+  <line x1="340" y1="133" x2="504" y2="140" stroke="#ccc" stroke-width="1"/>
+
+  <!-- 凡例 -->
+  <rect x="30" y="220" width="620" height="1" fill="#ddd"/>
+  <text x="30" y="242" font-size="12" font-weight="bold" fill="#555">各形態素に付与される情報（品詞・読み・原形）</text>
+
+  <!-- 品詞情報テーブル風 -->
+  <!-- ヘッダー -->
+  <rect x="30" y="252" width="620" height="26" rx="4" fill="#f0f0f0"/>
+  <text x="100" y="269" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">形態素</text>
+  <text x="250" y="269" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">品詞</text>
+  <text x="420" y="269" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">読み</text>
+  <text x="570" y="269" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">原形</text>
+  <line x1="168" y1="252" x2="168" y2="336" stroke="#ddd" stroke-width="1"/>
+  <line x1="326" y1="252" x2="326" y2="336" stroke="#ddd" stroke-width="1"/>
+  <line x1="494" y1="252" x2="494" y2="336" stroke="#ddd" stroke-width="1"/>
+
+  <!-- 行1 -->
+  <text x="100" y="292" text-anchor="middle" font-size="12" fill="#1a5fa8" font-weight="bold">すもも</text>
+  <text x="250" y="292" text-anchor="middle" font-size="11" fill="#333">名詞・一般</text>
+  <text x="420" y="292" text-anchor="middle" font-size="11" fill="#333">スモモ</text>
+  <text x="570" y="292" text-anchor="middle" font-size="11" fill="#333">すもも</text>
+  <line x1="30" y1="300" x2="650" y2="300" stroke="#eee" stroke-width="1"/>
+
+  <!-- 行2 -->
+  <text x="100" y="320" text-anchor="middle" font-size="12" fill="#2e7d32" font-weight="bold">も</text>
+  <text x="250" y="320" text-anchor="middle" font-size="11" fill="#333">助詞・係助詞</text>
+  <text x="420" y="320" text-anchor="middle" font-size="11" fill="#333">モ</text>
+  <text x="570" y="320" text-anchor="middle" font-size="11" fill="#333">も</text>
+  <line x1="30" y1="328" x2="650" y2="328" stroke="#eee" stroke-width="1"/>
+
+  <text x="340" y="350" text-anchor="middle" font-size="10" fill="#aaa">※ 実際にはすべての形態素に品詞・読み・原形などの情報が付与されます</text>
+
+  <defs>
+    <marker id="arrDown" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+      <path d="M1,1 L7,1 L4,7 z" fill="#888"/>
+    </marker>
+  </defs>
+
+</svg>
