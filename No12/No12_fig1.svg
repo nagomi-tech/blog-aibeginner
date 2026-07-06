@@ -1,0 +1,43 @@
+<svg viewBox="0 0 680 360" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <rect x="0" y="0" width="680" height="360" fill="#ffffff"/>
+  <text x="340" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a3a5c">学習データ：入力と正解出力のペア</text>
+
+  <!-- Row 1: 翻訳 -->
+  <text x="30" y="60" font-size="12" fill="#888">翻訳の場合</text>
+  <rect x="30" y="66" width="230" height="46" rx="8" fill="#e6f0ff" stroke="#1a5fb4" stroke-width="1.5"/>
+  <text x="145" y="86" text-anchor="middle" font-size="11.5" fill="#0d3a75">入力</text>
+  <text x="145" y="103" text-anchor="middle" font-size="11.5" fill="#0d3a75">昨日は雨でした</text>
+  <path d="M 265 89 L 400 89" stroke="#1a5fb4" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+  <rect x="405" y="66" width="245" height="46" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="527" y="86" text-anchor="middle" font-size="11.5" fill="#1b5e20">正解の出力</text>
+  <text x="527" y="103" text-anchor="middle" font-size="11.5" fill="#1b5e20">It rained yesterday</text>
+
+  <!-- Row 2: 対話 -->
+  <text x="30" y="148" font-size="12" fill="#888">対話の場合</text>
+  <rect x="30" y="154" width="230" height="46" rx="8" fill="#e6f0ff" stroke="#1a5fb4" stroke-width="1.5"/>
+  <text x="145" y="174" text-anchor="middle" font-size="11.5" fill="#0d3a75">入力</text>
+  <text x="145" y="191" text-anchor="middle" font-size="11.5" fill="#0d3a75">「今日は何する？」</text>
+  <path d="M 265 177 L 400 177" stroke="#1a5fb4" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+  <rect x="405" y="154" width="245" height="46" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="527" y="174" text-anchor="middle" font-size="11.5" fill="#1b5e20">正解の出力</text>
+  <text x="527" y="191" text-anchor="middle" font-size="11.5" fill="#1b5e20">「映画を見に行こうよ」</text>
+
+  <!-- Row 3: 文章生成 -->
+  <text x="30" y="236" font-size="12" fill="#888">文章生成の場合</text>
+  <rect x="30" y="242" width="230" height="58" rx="8" fill="#e6f0ff" stroke="#1a5fb4" stroke-width="1.5"/>
+  <text x="145" y="264" text-anchor="middle" font-size="11.5" fill="#0d3a75">入力</text>
+  <text x="145" y="281" text-anchor="middle" font-size="11.5" fill="#0d3a75">昔々、あるところに</text>
+  <path d="M 265 271 L 400 271" stroke="#1a5fb4" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+  <rect x="405" y="242" width="245" height="58" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="527" y="262" text-anchor="middle" font-size="11.5" fill="#1b5e20">正解の出力</text>
+  <text x="527" y="279" text-anchor="middle" font-size="11.5" fill="#1b5e20">おじいさんとおばあさんが</text>
+  <text x="527" y="294" text-anchor="middle" font-size="11.5" fill="#1b5e20">住んでいました</text>
+
+  <defs>
+    <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#1a5fb4"/>
+    </marker>
+  </defs>
+
+  <text x="340" y="342" text-anchor="middle" font-size="12" fill="#888">こうしたペアを数百万〜数億件用意する</text>
+</svg>

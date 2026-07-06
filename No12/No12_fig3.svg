@@ -1,0 +1,39 @@
+<svg viewBox="0 0 680 380" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <rect x="0" y="0" width="680" height="380" fill="#ffffff"/>
+  <text x="340" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a3a5c">誤差の計算とパラメータ調整のループ</text>
+
+  <!-- 4 nodes in a cycle -->
+  <!-- Node 1: top -->
+  <rect x="255" y="55" width="170" height="50" rx="10" fill="#e6f0ff" stroke="#1a5fb4" stroke-width="1.5"/>
+  <text x="340" y="76" text-anchor="middle" font-size="12" fill="#0d3a75">① 次の1単語を</text>
+  <text x="340" y="92" text-anchor="middle" font-size="12" fill="#0d3a75">予測する</text>
+
+  <!-- Node 2: right -->
+  <rect x="470" y="150" width="170" height="50" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="555" y="171" text-anchor="middle" font-size="12" fill="#bf360c">② 正解と比較して</text>
+  <text x="555" y="187" text-anchor="middle" font-size="12" fill="#bf360c">誤差を計算する</text>
+
+  <!-- Node 3: bottom -->
+  <rect x="255" y="245" width="170" height="50" rx="10" fill="#fce4ec" stroke="#ad1457" stroke-width="1.5"/>
+  <text x="340" y="266" text-anchor="middle" font-size="12" fill="#880e4f">③ パラメータを</text>
+  <text x="340" y="282" text-anchor="middle" font-size="12" fill="#880e4f">少し調整する</text>
+
+  <!-- Node 4: left -->
+  <rect x="40" y="150" width="170" height="50" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+  <text x="125" y="171" text-anchor="middle" font-size="12" fill="#1b5e20">④ 次のペアへ</text>
+  <text x="125" y="187" text-anchor="middle" font-size="12" fill="#1b5e20">進む</text>
+
+  <!-- Arrows forming a cycle -->
+  <path d="M 420 90 C 480 100, 530 120, 545 150" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+  <path d="M 545 200 C 500 230, 450 245, 420 260" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+  <path d="M 255 270 C 200 260, 150 230, 130 200" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+  <path d="M 130 150 C 150 120, 200 100, 255 88" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+
+  <defs>
+    <marker id="arrow3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#999"/>
+    </marker>
+  </defs>
+
+  <text x="340" y="345" text-anchor="middle" font-size="12" fill="#555">この4ステップを、何十億回という規模で繰り返す</text>
+</svg>
