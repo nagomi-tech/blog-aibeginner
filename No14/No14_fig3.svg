@@ -1,0 +1,62 @@
+<svg viewBox="0 0 760 520" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans','Yu Gothic',sans-serif">
+  <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+  <text x="380" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">BERTを例に——同じ形のモデルが、中身（パラメータ）を変えながら育つ</text>
+
+  <!-- ===== Arrows drawn first (so labels can sit on top, unobstructed) ===== -->
+
+  <!-- Arrow 1: stage1 -> stage2 -->
+  <path d="M 172,270 C 200,270 215,270 245,270" stroke="#4a7cc7" stroke-width="2.5" fill="none" marker-end="url(#arrowN)"/>
+
+  <!-- Fan-out arrows: stage2 -> 3 task models -->
+  <path d="M 402,255 C 470,255 500,150 530,95"  stroke="#c0713a" stroke-width="2.5" fill="none" marker-end="url(#arrowN)"/>
+  <path d="M 402,270 C 460,270 495,270 525,270" stroke="#c0713a" stroke-width="2.5" fill="none" marker-end="url(#arrowN)"/>
+  <path d="M 402,285 C 470,285 500,390 530,445" stroke="#c0713a" stroke-width="2.5" fill="none" marker-end="url(#arrowN)"/>
+
+  <!-- ===== Model 1: 学習前（グレー） ===== -->
+  <rect x="20" y="225" width="150" height="90" rx="10" fill="#eeeeee" stroke="#999999" stroke-width="2.5"/>
+  <text x="95" y="263" text-anchor="middle" font-size="14" font-weight="bold" fill="#555555">学習前の</text>
+  <text x="95" y="283" text-anchor="middle" font-size="14" font-weight="bold" fill="#555555">BERT</text>
+
+  <!-- Arrow1 label (drawn on top of the arrow line, opaque background) -->
+  <rect x="150" y="185" width="120" height="42" rx="6" fill="#ffffff"/>
+  <text x="210" y="198" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1f4d8f">事前学習</text>
+  <text x="210" y="213" text-anchor="middle" font-size="10.5" fill="#1f4d8f">（穴埋め問題：MLM）</text>
+  <rect x="160" y="216" width="100" height="20" rx="5" fill="#f2f2f2" stroke="#999999" stroke-dasharray="3,2"/>
+  <text x="210" y="230" text-anchor="middle" font-size="9.5" fill="#666">材料：大量の文章</text>
+
+  <!-- ===== Model 2: 事前学習済み（薄い緑） ===== -->
+  <rect x="250" y="225" width="150" height="90" rx="10" fill="#cdeacd" stroke="#4b8f4b" stroke-width="2.5"/>
+  <text x="325" y="256" text-anchor="middle" font-size="13" font-weight="bold" fill="#2f6b2f">事前学習済み</text>
+  <text x="325" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#2f6b2f">BERT</text>
+  <text x="325" y="293" text-anchor="middle" font-size="10.5" fill="#3f7a3f">（汎用の土台）</text>
+
+  <!-- Fan-out label (drawn on top of arrows, opaque background), placed in the clear gap -->
+  <rect x="400" y="150" width="128" height="70" rx="6" fill="#ffffff"/>
+  <text x="464" y="167" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b3541e">ファイン</text>
+  <text x="464" y="184" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b3541e">チューニング</text>
+  <rect x="404" y="190" width="120" height="28" rx="5" fill="#f2f2f2" stroke="#999999" stroke-dasharray="3,2"/>
+  <text x="464" y="202" text-anchor="middle" font-size="9.5" fill="#666">材料：専用の</text>
+  <text x="464" y="214" text-anchor="middle" font-size="9.5" fill="#666">ラベル付きデータ</text>
+
+  <!-- ===== Model 3a: 分類モデル（濃い緑） ===== -->
+  <rect x="530" y="35" width="170" height="90" rx="10" fill="#8fcf8f" stroke="#2f6b2f" stroke-width="2.5"/>
+  <text x="615" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f4d1f">分類モデル</text>
+  <text x="615" y="93" text-anchor="middle" font-size="10.5" fill="#1f4d1f">（例：感情分析）</text>
+
+  <!-- Model 3b: 検索モデル -->
+  <rect x="530" y="225" width="170" height="90" rx="10" fill="#8fcf8f" stroke="#2f6b2f" stroke-width="2.5"/>
+  <text x="615" y="263" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f4d1f">検索モデル</text>
+  <text x="615" y="283" text-anchor="middle" font-size="10.5" fill="#1f4d1f">（似た文書を探す）</text>
+
+  <!-- Model 3c: 固有表現抽出モデル -->
+  <rect x="530" y="415" width="170" height="90" rx="10" fill="#8fcf8f" stroke="#2f6b2f" stroke-width="2.5"/>
+  <text x="615" y="453" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f4d1f">固有表現抽出</text>
+  <text x="615" y="473" text-anchor="middle" font-size="10.5" fill="#1f4d1f">（人名・地名を探す）</text>
+
+  <defs>
+    <marker id="arrowN" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#888888"/>
+    </marker>
+  </defs>
+</svg>

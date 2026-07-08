@@ -1,0 +1,51 @@
+<svg viewBox="0 0 430 500" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans','Yu Gothic',sans-serif">
+  <rect x="0" y="0" width="430" height="500" fill="#ffffff"/>
+
+  <text x="200" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f2d3d">
+    GPTの構造——Decoderの積み重ね
+  </text>
+
+  <!-- input -->
+  <rect x="60" y="410" width="280" height="40" rx="6" fill="#f7f9fb" stroke="#9aa5b1"/>
+  <text x="200" y="435" text-anchor="middle" font-size="13" fill="#1f2d3d">入力（これまでに出た単語）</text>
+
+  <line x1="200" y1="410" x2="200" y2="390" stroke="#9aa5b1" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- embedding + position -->
+  <rect x="40" y="340" width="320" height="46" rx="6" fill="#fdeee3" stroke="#d97a4a"/>
+  <text x="200" y="360" text-anchor="middle" font-size="12" fill="#1f2d3d">単語埋め込み</text>
+  <text x="200" y="377" text-anchor="middle" font-size="12" fill="#1f2d3d">＋ 位置エンコーディング</text>
+
+  <line x1="200" y1="340" x2="200" y2="308" stroke="#9aa5b1" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Decoder block -->
+  <rect x="30" y="150" width="340" height="150" rx="8" fill="#ffffff" stroke="#d97a4a" stroke-width="2"/>
+
+  <rect x="50" y="168" width="300" height="42" rx="6" fill="#fdeee3" stroke="#d97a4a"/>
+  <text x="200" y="189" text-anchor="middle" font-size="11" fill="#1f2d3d">Self-Attention（マスク付き）</text>
+  <text x="200" y="204" text-anchor="middle" font-size="10.5" fill="#8a5a34">未来の単語を隠して計算</text>
+
+  <line x1="200" y1="210" x2="200" y2="226" stroke="#9aa5b1" stroke-width="1.5" marker-end="url(#arrowsm)"/>
+
+  <rect x="50" y="228" width="300" height="42" rx="6" fill="#fdeee3" stroke="#d97a4a"/>
+  <text x="200" y="254" text-anchor="middle" font-size="12" fill="#1f2d3d">Feed-Forward</text>
+
+  <text x="390" y="228" font-size="13" font-weight="bold" fill="#d97a4a">× N</text>
+
+  <line x1="200" y1="150" x2="200" y2="120" stroke="#9aa5b1" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- decoder output -->
+  <rect x="50" y="78" width="300" height="42" rx="6" fill="#fbe4e0" stroke="#c0392b" stroke-width="2"/>
+  <text x="200" y="103" text-anchor="middle" font-size="12" fill="#1f2d3d">次に来る単語の確率</text>
+
+  <text x="200" y="480" text-anchor="middle" font-size="12" fill="#999">図2：GPTの構造（Decoderのみ、Cross-Attentionなし）</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#9aa5b1"/>
+    </marker>
+    <marker id="arrowsm" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#9aa5b1"/>
+    </marker>
+  </defs>
+</svg>
