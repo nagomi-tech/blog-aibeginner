@@ -1,0 +1,87 @@
+<svg viewBox="0 0 680 380" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans','Yu Gothic',sans-serif">
+  <rect x="0" y="0" width="680" height="380" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f2d3d">
+    「それ」を処理するとき、各単語との関連度スコアを計算する
+  </text>
+
+  <!-- Word boxes -->
+  <!-- x positions computed with 6px gaps -->
+  <!-- その -->
+  <rect x="20" y="60" width="60" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="50" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">その</text>
+
+  <!-- 猫 -->
+  <rect x="86" y="60" width="40" height="44" rx="6" fill="#fdeee3" stroke="#d97a4a" stroke-width="1.5"/>
+  <text x="106" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">猫</text>
+
+  <!-- は -->
+  <rect x="132" y="60" width="30" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="147" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">は</text>
+
+  <!-- 魚 -->
+  <rect x="168" y="60" width="40" height="44" rx="6" fill="#fbe4e0" stroke="#c0392b" stroke-width="2"/>
+  <text x="188" y="87" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2d3d">魚</text>
+
+  <!-- が -->
+  <rect x="214" y="60" width="30" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="229" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">が</text>
+
+  <!-- 好きで -->
+  <rect x="250" y="60" width="70" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="285" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">好きで</text>
+
+  <!-- いつも -->
+  <rect x="326" y="60" width="70" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="361" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">いつも</text>
+
+  <!-- それ (source) -->
+  <rect x="402" y="60" width="60" height="44" rx="6" fill="#fff4cc" stroke="#c99a1f" stroke-width="2"/>
+  <text x="432" y="87" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2d3d">それ</text>
+
+  <!-- を -->
+  <rect x="468" y="60" width="30" height="44" rx="6" fill="#eef4fb" stroke="#4a7fc9" stroke-width="1.5"/>
+  <text x="483" y="87" text-anchor="middle" font-size="14" fill="#1f2d3d">を</text>
+
+  <!-- 追いかけていた -->
+  <rect x="504" y="60" width="120" height="44" rx="6" fill="#fdeee3" stroke="#d97a4a" stroke-width="1.5"/>
+  <text x="564" y="87" text-anchor="middle" font-size="13" fill="#1f2d3d">追いかけていた</text>
+
+  <!-- Attention curves (weak, drawn first) -->
+  <g fill="none" stroke="#b0b8c1" stroke-width="1.2" opacity="0.6">
+    <path d="M 432,104 C 432,150 50,150 50,104"/>
+    <path d="M 432,104 C 432,150 147,150 147,104"/>
+    <path d="M 432,104 C 432,150 229,150 229,104"/>
+    <path d="M 432,104 C 432,150 285,150 285,104"/>
+    <path d="M 432,104 C 432,150 361,150 361,104"/>
+    <path d="M 432,104 C 432,150 483,150 483,104"/>
+  </g>
+
+  <!-- Medium curves: 猫 / 追いかけていた -->
+  <g fill="none" stroke="#d97a4a" stroke-width="3" opacity="0.75">
+    <path d="M 432,104 C 432,175 106,175 106,104"/>
+    <path d="M 432,104 C 432,175 564,175 564,104"/>
+  </g>
+
+  <!-- Strongest curve: 魚 -->
+  <path d="M 432,104 C 432,200 188,200 188,104" fill="none" stroke="#c0392b" stroke-width="6" opacity="0.9"/>
+
+  <!-- Score labels -->
+  <text x="188" y="215" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">スコア 大</text>
+  <text x="106" y="188" text-anchor="middle" font-size="12" fill="#d97a4a">スコア 中</text>
+  <text x="564" y="188" text-anchor="middle" font-size="12" fill="#d97a4a">スコア 中</text>
+
+  <!-- Legend -->
+  <rect x="20" y="250" width="640" height="110" rx="8" fill="#f7f9fb" stroke="#dfe4ea"/>
+  <text x="40" y="278" font-size="13" font-weight="bold" fill="#1f2d3d">凡例：線の太さと色 ＝ 関連度スコアの大きさ</text>
+
+  <line x1="40" y1="298" x2="90" y2="298" stroke="#c0392b" stroke-width="6"/>
+  <text x="100" y="303" font-size="12" fill="#1f2d3d">スコア大　—　「それ」が最も強く参照する単語（＝魚）</text>
+
+  <line x1="40" y1="320" x2="90" y2="320" stroke="#d97a4a" stroke-width="3"/>
+  <text x="100" y="325" font-size="12" fill="#1f2d3d">スコア中　—　文法的・意味的に関連のある単語</text>
+
+  <line x1="40" y1="342" x2="90" y2="342" stroke="#b0b8c1" stroke-width="1.2"/>
+  <text x="100" y="347" font-size="12" fill="#1f2d3d">スコア小　—　直接の関連が薄い単語</text>
+</svg>
