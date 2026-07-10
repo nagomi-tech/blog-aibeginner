@@ -1,7 +1,7 @@
-<svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" width="100%">
-  <rect x="0" y="0" width="800" height="460" fill="#ffffff"/>
+<svg viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <rect x="0" y="0" width="800" height="480" fill="#ffffff"/>
 
-  <text x="400" y="24" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#333333">ノイズ除去処理の1サイクル</text>
+  <text x="400" y="24" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#333333">画像生成の全体像</text>
 
   <!-- テキスト条件の小さな流れ -->
   <rect x="30" y="45" width="150" height="52" rx="6" fill="#fdf3e3" stroke="#e0b96a" stroke-width="1.5"/>
@@ -62,6 +62,7 @@
   <text x="675" y="423" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ffffff" font-weight="bold">完成画像</text>
 
   <text x="400" y="445" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#999999">灰色の矢印：ノイズ除去の繰り返し処理　　青色の矢印：ループを抜けたあとの流れ</text>
+  <text x="400" y="463" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">「ノイズ除去ネットワーク」の処理は、前図の「ノイズ除去ネットワーク処理」です</text>
 
   <defs>
     <marker id="arrowM" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
