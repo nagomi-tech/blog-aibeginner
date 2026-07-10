@@ -1,0 +1,98 @@
+<svg viewBox="0 0 800 590" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <rect x="0" y="0" width="800" height="590" fill="#ffffff"/>
+
+  <text x="400" y="24" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#333333">U-Netの構造（層を積み重ねた形として見る）</text>
+
+  <!-- 入力 -->
+  <rect x="110" y="45" width="160" height="42" rx="6" fill="#eaf2fb" stroke="#8fb8e0" stroke-width="1.5"/>
+  <text x="190" y="63" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2b6cb0" font-weight="bold">入力</text>
+  <text x="190" y="78" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">（ノイズを含む画像）</text>
+  <path d="M190 87 L190 128" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+
+  <!-- Encoder領域 -->
+  <rect x="30" y="100" width="290" height="300" rx="10" fill="#eef4fb" stroke="#a9c6e6" stroke-width="2"/>
+  <text x="175" y="122" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2b5f96">Encoder（圧縮していく側）</text>
+
+  <rect x="60" y="135" width="220" height="55" rx="5" fill="#4a90d9" stroke="#2b6cb0" stroke-width="1.5"/>
+  <text x="170" y="157" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">畳み込み層 × 2</text>
+  <text x="170" y="173" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">+ ReLU</text>
+
+  <path d="M170 190 L170 225" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+  <text x="200" y="201" font-family="sans-serif" font-size="9" fill="#666666">ダウンサンプリング</text>
+  <text x="200" y="213" font-family="sans-serif" font-size="9" fill="#666666">（2×2 プーリング）</text>
+
+  <rect x="60" y="230" width="220" height="55" rx="5" fill="#4a90d9" stroke="#2b6cb0" stroke-width="1.5"/>
+  <text x="170" y="252" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">畳み込み層 × 2</text>
+  <text x="170" y="268" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">+ ReLU</text>
+
+  <path d="M180 285 L320 445" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+  <text x="235" y="310" font-family="sans-serif" font-size="9" fill="#666666">ダウンサンプリング</text>
+  <text x="235" y="322" font-family="sans-serif" font-size="9" fill="#666666">（2×2 プーリング）</text>
+
+  <!-- ボトルネック -->
+  <rect x="310" y="450" width="180" height="70" rx="6" fill="#9aa7b0" stroke="#6b7680" stroke-width="1.5"/>
+  <text x="400" y="467" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">ボトルネック</text>
+  <text x="400" y="483" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e8e8e8">畳み込み層 × 2 + ReLU</text>
+  <text x="400" y="497" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#e8e8e8">（もっとも低い解像度）</text>
+
+  <!-- Decoder領域 -->
+  <rect x="480" y="100" width="290" height="300" rx="10" fill="#fdeef5" stroke="#e6a9c6" stroke-width="2"/>
+  <text x="625" y="122" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#b0285f">Decoder（復元していく側）</text>
+
+  <path d="M480 445 L620 285" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+  <text x="565" y="310" text-anchor="end" font-family="sans-serif" font-size="9" fill="#666666">アップサンプリング</text>
+  <text x="565" y="322" text-anchor="end" font-family="sans-serif" font-size="9" fill="#666666">（逆畳み込み）</text>
+
+  <rect x="510" y="230" width="220" height="55" rx="5" fill="#e0609a" stroke="#c2185b" stroke-width="1.5"/>
+  <text x="620" y="250" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">スキップ接続を結合</text>
+  <text x="620" y="266" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff">+ 畳み込み層 × 2 + ReLU</text>
+
+  <path d="M620 230 L620 195" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+  <text x="590" y="206" text-anchor="end" font-family="sans-serif" font-size="9" fill="#666666">アップサンプリング</text>
+  <text x="590" y="218" text-anchor="end" font-family="sans-serif" font-size="9" fill="#666666">（逆畳み込み）</text>
+
+  <rect x="510" y="135" width="220" height="55" rx="5" fill="#e0609a" stroke="#c2185b" stroke-width="1.5"/>
+  <text x="620" y="155" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold">スキップ接続を結合</text>
+  <text x="620" y="171" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff">+ 畳み込み層 × 2 + ReLU</text>
+
+  <path d="M620 135 L620 92" stroke="#999999" stroke-width="2" marker-end="url(#arrowG)"/>
+
+  <!-- 出力 -->
+  <rect x="540" y="45" width="160" height="42" rx="6" fill="#fdeef5" stroke="#e6a9c6" stroke-width="1.5"/>
+  <text x="620" y="63" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b0285f" font-weight="bold">出力</text>
+  <text x="620" y="78" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#c26a8f">（予測されたノイズ）</text>
+
+  <!-- テキスト条件：Encoder・Decoderの外枠に向けて渡す -->
+  <rect x="335" y="335" width="130" height="42" rx="6" fill="#fdf3e3" stroke="#e0b96a" stroke-width="1.5"/>
+  <text x="400" y="353" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#7a5a2a" font-weight="bold">テキストのベクトル</text>
+  <text x="400" y="368" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#8a6a3a">（条件）</text>
+
+  <path d="M400 377 L400 447" stroke="#d99a3a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowO)"/>
+  <path d="M345 350 L296 350" stroke="#d99a3a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowO)"/>
+  <path d="M455 350 L504 350" stroke="#d99a3a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowO)"/>
+
+  <!-- スキップ接続 -->
+  <path d="M280 162 L510 162" stroke="#999999" stroke-width="2" stroke-dasharray="6,4"/>
+  <path d="M280 257 L510 257" stroke="#999999" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- 上段スキップ接続ラベル -->
+  <rect x="330" y="150" width="140" height="22" rx="4" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+  <text x="400" y="166" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666666">スキップ接続</text>
+
+  <!-- 下段スキップ接続ラベル -->
+  <rect x="330" y="245" width="140" height="22" rx="4" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+  <text x="400" y="261" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#666666">スキップ接続</text>
+
+  <!-- 凡例 -->
+  <text x="400" y="545" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">青：Encoder（圧縮）　ピンク：Decoder（復元）　グレー：ボトルネック</text>
+  <text x="400" y="561" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#777777">灰色の点線：スキップ接続　　オレンジの点線：テキスト条件（Encoder・Decoder全体、およびボトルネックへ）</text>
+
+  <defs>
+    <marker id="arrowG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#999999"/>
+    </marker>
+    <marker id="arrowO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#d99a3a"/>
+    </marker>
+  </defs>
+</svg>

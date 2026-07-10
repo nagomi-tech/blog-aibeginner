@@ -1,0 +1,54 @@
+<svg viewBox="0 0 780 460" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <rect x="0" y="0" width="780" height="460" fill="#ffffff"/>
+
+  <text x="390" y="24" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#333333">ノイズ除去ネットワークの処理の流れ（U字型）</text>
+
+  <!-- スキップ接続（構造として同じ解像度同士を直接結ぶ） -->
+  <path d="M160 120 L620 120" stroke="#999999" stroke-width="2" stroke-dasharray="6,4"/>
+  <path d="M300 205 L480 205" stroke="#999999" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- レベル1（最も高い解像度） -->
+  <rect x="40" y="50" width="120" height="140" rx="6" fill="#eaf2fb" stroke="#8fb8e0" stroke-width="1.5"/>
+  <text x="100" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2b6cb0" font-weight="bold">入力</text>
+  <text x="100" y="126" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">（高い解像度）</text>
+
+  <rect x="620" y="50" width="120" height="140" rx="6" fill="#eaf2fb" stroke="#8fb8e0" stroke-width="1.5"/>
+  <text x="680" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2b6cb0" font-weight="bold">出力</text>
+  <text x="680" y="126" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">（高い解像度）</text>
+
+  <!-- レベル2（中間の解像度） -->
+  <rect x="200" y="150" width="100" height="110" rx="6" fill="#eef1f4" stroke="#b7bfc7" stroke-width="1.5"/>
+  <text x="250" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444444">圧縮された</text>
+  <text x="250" y="216" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444444">特徴</text>
+
+  <rect x="480" y="150" width="100" height="110" rx="6" fill="#eef1f4" stroke="#b7bfc7" stroke-width="1.5"/>
+  <text x="530" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444444">復元された</text>
+  <text x="530" y="216" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444444">特徴</text>
+
+  <!-- ボトルネック（最も低い解像度） -->
+  <rect x="330" y="280" width="120" height="70" rx="6" fill="#dfe6ea" stroke="#9aa7b0" stroke-width="1.5"/>
+  <text x="390" y="308" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#333333" font-weight="bold">もっとも圧縮</text>
+  <text x="390" y="324" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555555">（低い解像度）</text>
+
+  <!-- エンコーダ側の経路（青） -->
+  <path d="M160 190 L198 150" stroke="#4a90d9" stroke-width="2.5" marker-end="url(#arrowB)"/>
+  <path d="M300 260 L328 280" stroke="#4a90d9" stroke-width="2.5" marker-end="url(#arrowB)"/>
+
+  <!-- デコーダ側の経路（青） -->
+  <path d="M452 280 L478 260" stroke="#4a90d9" stroke-width="2.5" marker-end="url(#arrowB)"/>
+  <path d="M582 150 L618 190" stroke="#4a90d9" stroke-width="2.5" marker-end="url(#arrowB)"/>
+
+  <text x="180" y="145" font-family="sans-serif" font-size="9" fill="#5a7fa0">圧縮</text>
+  <text x="595" y="145" font-family="sans-serif" font-size="9" fill="#5a7fa0">復元</text>
+
+  <!-- 凡例 -->
+  <text x="390" y="405" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#4a80b0">青の矢印：解像度を変えながら情報が伝わる経路（この軌跡がU字を描く）</text>
+  <text x="390" y="422" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#777777">灰色の点線：スキップ接続（同じ解像度の情報を直接橋渡し）</text>
+  <text x="390" y="442" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#999999">箱の大きさ：解像度の高さ（大きい箱ほど高解像度、小さい箱ほど圧縮されている）</text>
+
+  <defs>
+    <marker id="arrowB" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#4a90d9"/>
+    </marker>
+  </defs>
+</svg>
