@@ -4,7 +4,9 @@
 body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif;font-size:14px;}
 .fig-wrap{max-width:740px;margin:0 auto;}
 .fig-title{text-align:center;font-size:0.85em;color:#555;margin-top:8px;}
-.tbl{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;}
+.scroll-inner{min-width:670px;}
+.tbl{width:100%;border-collapse:collapse;margin-bottom:0;}
 .tbl th{padding:10px 8px;font-size:12px;font-weight:bold;text-align:center;border:1px solid #ddd;}
 .tbl td{padding:8px 10px;font-size:12px;border:1px solid #ddd;vertical-align:top;line-height:1.5;}
 .hd-item{background:#ECEFF1;font-weight:bold;color:#37474F;width:130px;text-align:left;}
@@ -21,8 +23,11 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
   勾配ブースティング（GBM）→ XGBoost → LightGBM の進化
 </p>
 
+<div class="table-scroll">
+<div class="scroll-inner">
+
 <!-- 継承の流れ -->
-<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:12px;">
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:12px;white-space:nowrap;">
   <span style="background:#546E7A;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">GBM（1999年）</span>
   <span style="color:#888;">── 継承＋改良 ──▶</span>
   <span style="background:#1565C0;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">XGBoost（2014年）</span>
@@ -96,6 +101,8 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
     </tr>
   </tbody>
 </table>
+</div>
+</div>
 
 <div class="note">
   <strong>3つに共通する仕組み：</strong>
