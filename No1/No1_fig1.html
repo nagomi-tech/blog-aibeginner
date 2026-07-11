@@ -1,0 +1,279 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIの学習と近似式</title>
+<style>
+  body { font-family: sans-serif; max-width: 700px; margin: 0 auto; padding: 16px; background: #fff; color: #333; }
+  canvas { cursor: crosshair; display: block; width: 100%; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+  .controls { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  button {
+    padding: 5px 12px; border: 1px solid #bbb; border-radius: 5px;
+    background: #fff; cursor: pointer; font-size: 13px; color: #333;
+  }
+  button:hover { background: #f0f0f0; }
+  button.active { background: #534AB7; color: #fff; border-color: #534AB7; }
+  .stats { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box { background: #f5f5f5; border-radius: 6px; padding: 10px; }
+  .stat-label { font-size: 12px; color: #777; margin-bottom: 3px; }
+  .stat-value { font-size: 16px; font-weight: bold; }
+  .stat-formula { font-size: 12px; font-family: monospace; line-height: 1.6; }
+  .note { font-size: 11px; color: #999; margin-top: 8px; line-height: 1.7; }
+  .caption { font-size: 13px; color: #666; margin-bottom: 8px; }
+</style>
+
+<p class="caption">▼ グラフをクリックしてデータを追加すると、AIが近似式を「学習」します</p>
+
+<canvas id="graph" width="640" height="340"></canvas>
+
+<div class="controls">
+  <button onclick="apReset()">リセット</button>
+  <button id="btn-linear" class="active" onclick="apMode('linear')">直線</button>
+  <button id="btn-quad" onclick="apMode('quad')">2次曲線</button>
+  <button id="btn-cubic" onclick="apMode('cubic')">3次曲線</button>
+  <button id="btn-quartic" onclick="apMode('quartic')">4次曲線</button>
+  <button id="btn-exp" onclick="apMode('exp')">指数関数</button>
+</div>
+
+<div class="stats">
+  <div class="stat-box">
+    <div class="stat-label">データ点（学習データ）</div>
+    <div id="ap-n" class="stat-value">0 点</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">近似式（モデル）</div>
+    <div id="ap-formula" class="stat-formula">データを追加してください</div>
+  </div>
+</div>
+
+<p class="note">
+  ● 青い点 = 学習データ　— 赤い線 = 近似式（モデル）<br>
+  同じデータでもモデル（アーキテクチャ）を変えると結果が変わります。<br>
+  点が少ないのに高次曲線を選ぶと近似線が大きく暴れます（過学習）。
+</p>
+
+<script>
+(function () {
+  var canvas = document.getElementById('graph');
+  var ctx = canvas.getContext('2d');
+  // 論理座標系（描画計算はすべてこの単位で行う）
+  var W = 640, H = 340, PAD = 52;
+  var pts = [], mode = 'linear';
+
+  /* --- 高解像度ディスプレイ対応 ---
+     canvasの内部解像度をdevicePixelRatio倍にし、ctx.scaleで補正する。
+     表示サイズはCSSのwidth:100%に任せるため、ここではstyle.widthを固定しない。 */
+  function setupCanvas() {
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /* --- 座標変換（論理座標系） --- */
+  function toC(x, y) {
+    return [PAD + x * (W - PAD * 2), H - PAD - y * (H - PAD * 2)];
+  }
+  function fromC(cx, cy) {
+    return [(cx - PAD) / (W - PAD * 2), (H - PAD - cy) / (H - PAD * 2)];
+  }
+
+  /* --- クリック（タップ）でデータ点追加 ---
+     r.width/r.height は画面上の表示サイズ（レスポンシブで変化する）。
+     論理座標系(W,H)へ変換するので、devicePixelRatioの影響を受けない。 */
+  canvas.addEventListener('click', function (e) {
+    var r = canvas.getBoundingClientRect();
+    var sx = W / r.width;
+    var sy = H / r.height;
+    var p = fromC((e.clientX - r.left) * sx, (e.clientY - r.top) * sy);
+    if (p[0] < 0 || p[0] > 1 || p[1] < 0 || p[1] > 1) return;
+    pts.push(p);
+    draw();
+  });
+
+  /* --- 連立方程式（ガウス消去法） --- */
+  function solveN(A, b) {
+    var n = b.length;
+    var M = A.map(function (r, i) { return r.slice().concat([b[i]]); });
+    for (var col = 0; col < n; col++) {
+      var mx = col;
+      for (var r = col + 1; r < n; r++) {
+        if (Math.abs(M[r][col]) > Math.abs(M[mx][col])) mx = r;
+      }
+      var tmp = M[col]; M[col] = M[mx]; M[mx] = tmp;
+      if (Math.abs(M[col][col]) < 1e-12) return null;
+      for (var r = col + 1; r < n; r++) {
+        var f = M[r][col] / M[col][col];
+        for (var c = col; c <= n; c++) M[r][c] -= f * M[col][c];
+      }
+    }
+    var x = [];
+    for (var i = n - 1; i >= 0; i--) {
+      x[i] = M[i][n];
+      for (var j = i + 1; j < n; j++) x[i] -= M[i][j] * x[j];
+      x[i] /= M[i][i];
+    }
+    return x;
+  }
+
+  /* --- 多項式フィット --- */
+  function fitPoly(pts, deg) {
+    var n = pts.length;
+    if (n <= deg) return null;
+    var d = deg + 1;
+    var S = [], T = [];
+    for (var i = 0; i < 2 * deg + 1; i++) S.push(0);
+    for (var i = 0; i < d; i++) T.push(0);
+    pts.forEach(function (p) {
+      var x = p[0], y = p[1], xp = 1;
+      for (var i = 0; i < 2 * deg + 1; i++) { S[i] += xp; xp *= x; }
+      xp = 1;
+      for (var i = 0; i < d; i++) { T[i] += y * xp; xp *= x; }
+    });
+    var A = [];
+    for (var i = 0; i < d; i++) {
+      var row = [];
+      for (var j = 0; j < d; j++) row.push(S[i + j]);
+      A.push(row);
+    }
+    var c = solveN(A, T);
+    if (!c) return null;
+    return {
+      fn: function (x) {
+        var s = 0, xp = 1;
+        for (var i = 0; i < d; i++) { s += c[i] * xp; xp *= x; }
+        return s;
+      },
+      coeffs: c
+    };
+  }
+
+  /* --- 指数関数フィット --- */
+  function fitExp(pts) {
+    var vp = pts.filter(function (p) { return p[1] > 0.01; });
+    if (vp.length < 2) return null;
+    var lp = vp.map(function (p) { return [p[0], Math.log(p[1])]; });
+    var res = fitPoly(lp, 1);
+    if (!res) return null;
+    var lnA = res.coeffs[0], k = res.coeffs[1], A = Math.exp(lnA);
+    return { fn: function (x) { return A * Math.exp(k * x); }, A: A, k: k };
+  }
+
+  /* --- 多項式の式文字列 --- */
+  function formatPoly(c) {
+    var sup = ['', '', '²', '³', '⁴'];
+    var deg = c.length - 1, s = 'y = ';
+    var first = true;
+    for (var i = deg; i >= 0; i--) {
+      var v = c[i];
+      if (Math.abs(v) < 0.001) continue;
+      var sign = first ? (v < 0 ? '-' : '') : (v >= 0 ? ' + ' : ' - ');
+      var abs = Math.abs(v).toFixed(2);
+      if (i === 0) s += sign + abs;
+      else if (i === 1) s += sign + abs + 'x';
+      else s += sign + abs + 'x' + sup[i];
+      first = false;
+    }
+    return s;
+  }
+
+  var minPts = { linear: 2, quad: 3, cubic: 4, quartic: 5, exp: 2 };
+
+  /* --- 描画 --- */
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    /* グリッド */
+    ctx.strokeStyle = '#ececec'; ctx.lineWidth = 0.5;
+    for (var i = 0; i <= 4; i++) {
+      var p1 = toC(i / 4, 0), p2 = toC(i / 4, 1);
+      ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+      var p3 = toC(0, i / 4), p4 = toC(1, i / 4);
+      ctx.beginPath(); ctx.moveTo(p3[0], p3[1]); ctx.lineTo(p4[0], p4[1]); ctx.stroke();
+    }
+
+    /* 軸 */
+    ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+    var a = toC(0, 0), b = toC(1, 0);
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    var c = toC(0, 0), d = toC(0, 1);
+    ctx.beginPath(); ctx.moveTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.stroke();
+
+    /* 軸ラベル・目盛り */
+    ctx.fillStyle = '#bbb'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    for (var i = 0; i <= 4; i++) {
+      var p = toC(i / 4, 0);
+      ctx.fillText(i * 25, p[0], p[1] + 16);
+    }
+    ctx.textAlign = 'right';
+    for (var i = 1; i <= 4; i++) {
+      var p = toC(0, i / 4);
+      ctx.fillText((i / 4).toFixed(2), p[0] - 6, p[1] + 4);
+    }
+    ctx.fillStyle = '#999'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('x（入力データ：部屋の広さ など）', W / 2, H - 8);
+    ctx.save(); ctx.translate(14, H / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('y（出力：家賃 など）', 0, 0); ctx.restore();
+
+    /* 近似 */
+    var needed = minPts[mode] || 2;
+    var fit = null;
+    if (pts.length >= needed) {
+      if (mode === 'linear')  fit = fitPoly(pts, 1);
+      else if (mode === 'quad')    fit = fitPoly(pts, 2);
+      else if (mode === 'cubic')   fit = fitPoly(pts, 3);
+      else if (mode === 'quartic') fit = fitPoly(pts, 4);
+      else fit = fitExp(pts);
+    }
+
+    var formulaText = '';
+    if (fit) {
+      ctx.strokeStyle = '#D85A30'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+      ctx.beginPath();
+      var first = true;
+      for (var i = 0; i <= 400; i++) {
+        var x = i / 400, y = fit.fn(x);
+        if (y < -0.2 || y > 1.2) { first = true; continue; }
+        var p = toC(x, Math.max(-0.2, Math.min(1.2, y)));
+        if (first) { ctx.moveTo(p[0], p[1]); first = false; } else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.stroke();
+      if (mode === 'exp' && fit.A !== undefined) {
+        formulaText = 'y = ' + fit.A.toFixed(2) + '×e^(' + fit.k.toFixed(2) + 'x)';
+      } else if (fit.coeffs) {
+        formulaText = formatPoly(fit.coeffs);
+      }
+    } else {
+      var rem = needed - pts.length;
+      formulaText = pts.length === 0 ? 'データを追加してください' : 'あと' + rem + '点で近似開始';
+    }
+
+    /* データ点 */
+    pts.forEach(function (p) {
+      var cv = toC(p[0], p[1]);
+      ctx.beginPath(); ctx.arc(cv[0], cv[1], 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#534AB7'; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+
+    /* 情報更新 */
+    document.getElementById('ap-n').textContent = pts.length + ' 点';
+    document.getElementById('ap-formula').textContent = formulaText;
+  }
+
+  /* --- 外部関数 --- */
+  window.apReset = function () { pts = []; draw(); };
+  window.apMode = function (m) {
+    mode = m;
+    ['linear', 'quad', 'cubic', 'quartic', 'exp'].forEach(function (k) {
+      var btn = document.getElementById('btn-' + k);
+      if (btn) btn.className = (k === m) ? 'active' : '';
+    });
+    draw();
+  };
+
+  setupCanvas();
+  draw();
+
+  // 画面回転・ウィンドウサイズ変更時にdprが変わるケースへの対応
+  window.addEventListener('resize', function () { setupCanvas(); draw(); });
+})();
+</script>
