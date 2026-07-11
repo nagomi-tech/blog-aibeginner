@@ -10,38 +10,6 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
 .tbl tr:nth-child(even) td{background:#fafafa;}
 .hd-item{background:#ECEFF1;font-weight:bold;color:#37474F;width:140px;text-align:left;}
 .note{font-size:11px;padding:8px 12px;border-radius:4px;border:1px solid #ccc;background:#F5F5F5;margin-top:4px;}
-
-/* ── スマホ幅ではテーブルをカード形式に変換（横スクロールに頼らない） ── */
-@media (max-width: 680px) {
-  .tbl, .tbl thead, .tbl tbody, .tbl tr, .tbl th, .tbl td { display: block; width: auto; }
-  .tbl thead { display: none; } /* 見出し行は各カードの中に個別表示するので非表示 */
-  .tbl tr {
-    margin-bottom: 14px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .tbl tr:nth-child(even) td { background: transparent; } /* カード内の縞模様は不要なので解除 */
-  .tbl .hd-item {
-    width: auto;
-    font-size: 13px;
-    padding: 8px 10px;
-    border-bottom: 2px solid #CFD8DC;
-  }
-  .tbl td:not(.hd-item) {
-    border: none;
-    border-top: 1px solid #eee;
-    padding: 8px 10px 8px 10px;
-  }
-  .tbl td:not(.hd-item)::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 10px;
-    font-weight: bold;
-    color: #999;
-    margin-bottom: 3px;
-  }
-}
 </style>
 
 
@@ -58,53 +26,53 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
   <tbody>
     <tr>
       <td class="hd-item">学習の方式</td>
-      <td data-label="ランダムフォレスト">並列（独立した木を同時に構築）</td>
-      <td data-label="XGBoost / LightGBM">直列（残差を順番に修正）</td>
+      <td>並列（独立した木を同時に構築）</td>
+      <td>直列（残差を順番に修正）</td>
     </tr>
     <tr>
       <td class="hd-item">削減する誤差</td>
-      <td data-label="ランダムフォレスト">バリアンス（予測のブレ）</td>
-      <td data-label="XGBoost / LightGBM">バイアス（予測の偏り）</td>
+      <td>バリアンス（予測のブレ）</td>
+      <td>バイアス（予測の偏り）</td>
     </tr>
     <tr>
       <td class="hd-item">木1本の深さ</td>
-      <td data-label="ランダムフォレスト">深め（制限なし〜20程度）</td>
-      <td data-label="XGBoost / LightGBM">浅め（max_depth：3〜6程度）</td>
+      <td>深め（制限なし〜20程度）</td>
+      <td>浅め（max_depth：3〜6程度）</td>
     </tr>
     <tr>
       <td class="hd-item">精度</td>
-      <td data-label="ランダムフォレスト">高い（実務でも十分）</td>
-      <td data-label="XGBoost / LightGBM"><strong style="color:#B71C1C;">最高水準（表形式データ）</strong></td>
+      <td>高い（実務でも十分）</td>
+      <td><strong style="color:#B71C1C;">最高水準（表形式データ）</strong></td>
     </tr>
     <tr>
       <td class="hd-item">過学習への強さ</td>
-      <td data-label="ランダムフォレスト"><strong style="color:#1565C0;">強い（デフォルトで安定）</strong></td>
-      <td data-label="XGBoost / LightGBM">チューニング次第</td>
+      <td><strong style="color:#1565C0;">強い（デフォルトで安定）</strong></td>
+      <td>チューニング次第</td>
     </tr>
     <tr>
       <td class="hd-item">ハイパーパラメータ</td>
-      <td data-label="ランダムフォレスト"><strong style="color:#1565C0;">少なめ（調整が容易）</strong></td>
-      <td data-label="XGBoost / LightGBM">多め（学習率・本数・深さ等）</td>
+      <td><strong style="color:#1565C0;">少なめ（調整が容易）</strong></td>
+      <td>多め（学習率・本数・深さ等）</td>
     </tr>
     <tr>
       <td class="hd-item">計算速度</td>
-      <td data-label="ランダムフォレスト">並列化しやすく高速</td>
-      <td data-label="XGBoost / LightGBM">直列だが実装の最適化で高速</td>
+      <td>並列化しやすく高速</td>
+      <td>直列だが実装の最適化で高速</td>
     </tr>
     <tr>
       <td class="hd-item">欠損値の処理</td>
-      <td data-label="ランダムフォレスト">前処理が必要（実装依存）</td>
-      <td data-label="XGBoost / LightGBM"><strong style="color:#B71C1C;">自動処理に対応</strong></td>
+      <td>前処理が必要（実装依存）</td>
+      <td><strong style="color:#B71C1C;">自動処理に対応</strong></td>
     </tr>
     <tr>
       <td class="hd-item">特徴量の正規化</td>
-      <td data-label="ランダムフォレスト">不要（決定木ベース）</td>
-      <td data-label="XGBoost / LightGBM">不要（決定木ベース）</td>
+      <td>不要（決定木ベース）</td>
+      <td>不要（決定木ベース）</td>
     </tr>
     <tr>
       <td class="hd-item">向いている場面</td>
-      <td data-label="ランダムフォレスト" style="color:#1565C0;">素早くベースラインを作りたい時。ハイパーパラメータ調整の手間を省きたい時</td>
-      <td data-label="XGBoost / LightGBM" style="color:#B71C1C;">精度を最大化したい時。大規模データ・欠損値の多いデータ</td>
+      <td style="color:#1565C0;">素早くベースラインを作りたい時。ハイパーパラメータ調整の手間を省きたい時</td>
+      <td style="color:#B71C1C;">精度を最大化したい時。大規模データ・欠損値の多いデータ</td>
     </tr>
   </tbody>
 </table>

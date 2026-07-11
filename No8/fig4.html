@@ -4,8 +4,7 @@
 body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif;font-size:14px;}
 .fig-wrap{max-width:740px;margin:0 auto;}
 .fig-title{text-align:center;font-size:0.85em;color:#555;margin-top:8px;}
-.flow-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:12px;flex-wrap:wrap;}
-.tbl{width:100%;border-collapse:collapse;margin-bottom:0;}
+.tbl{width:100%;border-collapse:collapse;margin-bottom:12px;}
 .tbl th{padding:10px 8px;font-size:12px;font-weight:bold;text-align:center;border:1px solid #ddd;}
 .tbl td{padding:8px 10px;font-size:12px;border:1px solid #ddd;vertical-align:top;line-height:1.5;}
 .hd-item{background:#ECEFF1;font-weight:bold;color:#37474F;width:130px;text-align:left;}
@@ -13,37 +12,6 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
 .ng{color:#B0BEC5;}
 .note{font-size:11px;padding:8px 12px;border-radius:4px;border:1px solid #F9A825;background:#FFF9C4;margin-top:4px;}
 .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;color:#fff;margin-bottom:4px;}
-
-/* ── スマホ幅ではテーブルをカード形式に変換（横スクロールに頼らない） ── */
-@media (max-width: 680px) {
-  .tbl, .tbl thead, .tbl tbody, .tbl tr, .tbl th, .tbl td { display: block; width: auto; }
-  .tbl thead { display: none; } /* 見出し行は各カードの中に個別表示するので非表示 */
-  .tbl tr {
-    margin-bottom: 14px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .tbl .hd-item {
-    width: auto;
-    font-size: 13px;
-    padding: 8px 10px;
-    border-bottom: 2px solid #CFD8DC;
-  }
-  .tbl td:not(.hd-item) {
-    border: none;
-    border-top: 1px solid #eee;
-    padding: 8px 10px 8px 10px;
-  }
-  .tbl td:not(.hd-item)::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 10px;
-    font-weight: bold;
-    color: #999;
-    margin-bottom: 3px;
-  }
-}
 </style>
 
 
@@ -54,7 +22,7 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
 </p>
 
 <!-- 継承の流れ -->
-<div class="flow-row">
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:12px;">
   <span style="background:#546E7A;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">GBM（1999年）</span>
   <span style="color:#888;">── 継承＋改良 ──▶</span>
   <span style="background:#1565C0;color:#fff;padding:4px 12px;border-radius:4px;font-weight:bold;">XGBoost（2014年）</span>
@@ -74,57 +42,57 @@ body{margin:0;padding:16px;background:#fff;font-family:'Helvetica Neue',Arial,'H
   <tbody>
     <tr>
       <td class="hd-item">木の成長方式</td>
-      <td data-label="GBM" style="background:#F5F5F5;">深さ優先<br>（Level-wise）</td>
-      <td data-label="XGBoost" style="background:#F8FBFF;">深さ優先<br>（Level-wise）</td>
-      <td data-label="LightGBM" style="background:#F9FBF9;"><strong style="color:#2E7D32;">葉優先<br>（Leaf-wise）</strong></td>
+      <td style="background:#F5F5F5;">深さ優先<br>（Level-wise）</td>
+      <td style="background:#F8FBFF;">深さ優先<br>（Level-wise）</td>
+      <td style="background:#F9FBF9;"><strong style="color:#2E7D32;">葉優先<br>（Leaf-wise）</strong></td>
     </tr>
     <tr>
       <td class="hd-item">正則化</td>
-      <td data-label="GBM">✘ なし</td>
-      <td data-label="XGBoost"><span class="ok">✔ γ・λによる正則化</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ 同上（継承）</span></td>
+      <td>✘ なし</td>
+      <td><span class="ok">✔ γ・λによる正則化</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
     </tr>
     <tr>
       <td class="hd-item">欠損値の自動処理</td>
-      <td data-label="GBM"><span class="ng">✘ 手動での前処理が必要</span></td>
-      <td data-label="XGBoost"><span class="ok">✔ 自動処理に対応</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ 同上（継承）</span></td>
+      <td><span class="ng">✘ 手動での前処理が必要</span></td>
+      <td><span class="ok">✔ 自動処理に対応</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
     </tr>
     <tr>
       <td class="hd-item">列・行サブサンプリング</td>
-      <td data-label="GBM"><span class="ng">✘ なし</span></td>
-      <td data-label="XGBoost"><span class="ok">✔ colsample_bytree<br>subsample</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ 同上（継承）</span></td>
+      <td><span class="ng">✘ なし</span></td>
+      <td><span class="ok">✔ colsample_bytree<br>subsample</span></td>
+      <td><span class="ok">✔ 同上（継承）</span></td>
     </tr>
     <tr>
       <td class="hd-item">分岐探索の並列化</td>
-      <td data-label="GBM"><span class="ng">✘ なし</span></td>
-      <td data-label="XGBoost"><span class="ok">✔ CPUマルチコア対応</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ 同上＋さらに高速化</span></td>
+      <td><span class="ng">✘ なし</span></td>
+      <td><span class="ok">✔ CPUマルチコア対応</span></td>
+      <td><span class="ok">✔ 同上＋さらに高速化</span></td>
     </tr>
     <tr>
       <td class="hd-item">GOSS<br><small>（残差小データを間引く）</small></td>
-      <td data-label="GBM"><span class="ng">✘</span></td>
-      <td data-label="XGBoost"><span class="ng">✘</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ LightGBM独自技術</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ok">✔ LightGBM独自技術</span></td>
     </tr>
     <tr>
       <td class="hd-item">EFB<br><small>（排他的特徴量をまとめる）</small></td>
-      <td data-label="GBM"><span class="ng">✘</span></td>
-      <td data-label="XGBoost"><span class="ng">✘</span></td>
-      <td data-label="LightGBM"><span class="ok">✔ LightGBM独自技術</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ng">✘</span></td>
+      <td><span class="ok">✔ LightGBM独自技術</span></td>
     </tr>
     <tr>
       <td class="hd-item">大規模・高次元データへの強さ</td>
-      <td data-label="GBM">△ 低速</td>
-      <td data-label="XGBoost">○ 実用水準</td>
-      <td data-label="LightGBM"><strong style="color:#2E7D32;">◎ 最も高速・省メモリ</strong></td>
+      <td>△ 低速</td>
+      <td>○ 実用水準</td>
+      <td><strong style="color:#2E7D32;">◎ 最も高速・省メモリ</strong></td>
     </tr>
     <tr>
       <td class="hd-item">用途の目安</td>
-      <td data-label="GBM" style="background:#F5F5F5;color:#546E7A;">理論学習・小規模データ。実務ではXGBoost/LightGBMが主流</td>
-      <td data-label="XGBoost" style="background:#F8FBFF;color:#1565C0;">中〜大規模データに安定した選択。情報・事例が豊富</td>
-      <td data-label="LightGBM" style="background:#F9FBF9;color:#2E7D32;">大規模・高次元データ。学習速度を優先したい場合</td>
+      <td style="background:#F5F5F5;color:#546E7A;">理論学習・小規模データ。実務ではXGBoost/LightGBMが主流</td>
+      <td style="background:#F8FBFF;color:#1565C0;">中〜大規模データに安定した選択。情報・事例が豊富</td>
+      <td style="background:#F9FBF9;color:#2E7D32;">大規模・高次元データ。学習速度を優先したい場合</td>
     </tr>
   </tbody>
 </table>
