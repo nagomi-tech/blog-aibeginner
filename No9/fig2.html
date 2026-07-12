@@ -115,13 +115,17 @@
   }
 
   const pad = 16;
-  const graphW = W/2 - pad*3 - 4;
+  const boxPadLeft = 46, boxPadRight = 30; // drawGraphの背景ボックス余白と一致させる
+  const boxGap = 12;   // 2つのグラフの背景ボックス間の隙間
+  const outerMargin = 14; // キャンバス端から背景ボックス端までの余白
+  // グラフ本体（軸の内側）の幅を、背景ボックス同士が重ならないよう逆算
+  const graphW = (W - outerMargin*2 - boxGap) / 2 - boxPadLeft - boxPadRight;
   const graphH = 185;
   const baseY = H - 52;
 
   // ===== 左：ReLU =====
   // Y軸を5まで広げて「ずっと右上がり」を正しく表示
-  const rox = pad+44, roy = baseY;
+  const rox = outerMargin + boxPadLeft, roy = baseY;
   drawGraph({
     ox: rox, oy: roy, gw: graphW, gh: graphH,
     xMin:-5, xMax:5, yMin:-0.5, yMax:5,
@@ -152,7 +156,7 @@
   ctx.restore();
 
   // ===== 右：シグモイド =====
-  const sox = W/2+pad+18, soy = baseY;
+  const sox = rox + graphW + boxPadRight + boxGap + boxPadLeft, soy = baseY;
   drawGraph({
     ox: sox, oy: soy, gw: graphW, gh: graphH,
     xMin:-5, xMax:5, yMin:-0.1, yMax:1.1,
