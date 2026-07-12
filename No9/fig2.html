@@ -7,16 +7,19 @@
 <style>
   body { margin: 0; background: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; }
   canvas { display: block; }
+  .scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 </style>
 </head>
 <body>
-<canvas id="canvas9f2"></canvas>
+<div class="scroll-wrapper">
+<canvas id="canvas9f2" style="max-width:none;"></canvas>
+</div>
 <p style="text-align:center;font-size:0.85em;color:#555;margin-top:6px;">図2：代表的な活性化関数——ReLU（左）とシグモイド（右）</p>
 <script>
 (()=>{
   const canvas = document.getElementById('canvas9f2');
   const dpr = window.devicePixelRatio || 1;
-  const W = Math.min(window.innerWidth, 720);
+  const W = 720; // 常に見やすい固定幅で描画し、はみ出す場合は横スクロールで対応
   const H = 310;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
